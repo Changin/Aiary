@@ -86,9 +86,9 @@ def bootstrap_counseling(entry: DiaryEntry, session: CounselingSession):
 
     # 사용자에게 보여줄 첫 메시지 텍스트 구성
     msg_lines = []
-    msg_lines.append("오늘 일기에 대해 Aiary가 정리해본 내용이에요. <br/>")
+    msg_lines.append("오늘 일기에 대해 Aiary가 정리해본 내용이에요.")
     if summary:
-        msg_lines.append("■ 요약<br/>")
+        msg_lines.append("■ 요약")
         msg_lines.append(summary)
         msg_lines.append("")
 

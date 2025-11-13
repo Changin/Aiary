@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Aiary | AI 일기 분석 & 심리상담{% endblock %}
+
+{% block content %}
+<div class="row align-items-center">
+  <!-- 왼쪽: 카피/버튼 -->
+  <div class="col-lg-7 mb-4 mb-lg-0">
+    <h1 class="display-5 fw-semibold mb-3">
+      당신의 하루를 이해하는<br>
+      AI 일기 분석 서비스, <span class="text-primary">Aiary</span>
+    </h1>
+    <p class="text-muted lead mb-4">
+      일기를 쓰면, Aiary가 감정의 흐름을 분석하고 공감 어린 피드백을 제공합니다.<br>
+      복잡한 고민은 익명성·보안성을 고려한 AI 상담 챗으로 이어갈 수 있어요.
+    </p>
+
+    {% if user.is_authenticated %}
+      <a href="{% url 'diary:create' %}" class="btn btn-primary btn-lg me-2">
+        오늘 일기 쓰러가기
+      </a>
+      <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary btn-lg">
+        내 감정 변화 보기
+      </a>
+    {% else %}
+      <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-lg me-2">
+        무료로 시작하기
+      </a>
+      <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-lg">
+        이미 계정이 있다면 로그인
+      </a>
+    {% endif %}
+  </div>
+
+  <!-- 오른쪽: 프로토타입 미니 UI 미리보기 -->
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Aiary 미리보기</h5>
+        <p class="small text-muted mb-3">
+          예시 일기
+        </p>
+        <div class="border rounded p-3 mb-3 bg-light">
+          오늘은 너무 지치고 답답한 하루였다. 해야 할 일은 많은데 진도가 안 나가고,
+          사람들과의 대화에서도 자꾸 예민하게 반응하게 된다...
+        </div>
+        <p class="small text-muted mb-2">
+          Aiary의 분석 예시
+        </p>
+        <ul class="list-unstyled small">
+          <li>• 전반적인 감정: 불안, 피로, 자기비판</li>
+          <li>• 주요 요인: 업무 압박, 대인관계에 대한 걱정</li>
+          <li>• 제안: 오늘은 스스로를 탓하기보다, 할 수 있었던 것에 초점을 맞춰보세요.</li>
+          <li>• 오늘의 성찰 질문 3가지: </li>
+        </ul>
+        <div class="text-end">
+          <span class="badge bg-primary-subtle text-primary">실제 서비스에서는 GPT 기반으로 분석</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

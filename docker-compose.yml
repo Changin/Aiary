@@ -1,0 +1,19 @@
+version: "3.1"
+
+services:
+  db:
+    image: postgres:16
+    container_name: aiary-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aiary
+      POSTGRES_USER: aiary
+      POSTGRES_PASSWORD: aiarypassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - aiary_pg_data:/var/lib/postgresql/data
+
+volumes:
+  aiary_pg_data:
+

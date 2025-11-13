@@ -1,0 +1,78 @@
+{% load static %}
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}Aiary{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap 5 CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    >
+    <!-- 프로젝트용 CSS (선택) -->
+    <!-- link href="{# static 'css/aiary.css' #}" rel="stylesheet" -->
+  </head>
+  <body class="bg-light">
+    <!-- 상단 네비게이션 -->
+    <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+      <div class="container">
+        <a class="navbar-brand fw-semibold" href="{% url 'web:home' %}">
+          📝 Aiary
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarAiary">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarAiary">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'web:home' %}">홈</a>
+            </li>
+            <!-- 향후 기능용 메뉴 자리 -->
+            <!-- <li class="nav-item"><a class="nav-link" href="#">기능 소개</a></li> -->
+          </ul>
+
+          <div class="d-flex">
+            {% if user.is_authenticated %}
+              <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:list' %}">
+                내 일기
+              </a>
+              <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                  로그아웃
+                </button>
+              </form>
+            {% else %}
+              <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'accounts:login' %}">
+                로그인
+              </a>
+              <a class="btn btn-primary btn-sm" href="{% url 'accounts:signup' %}">
+                회원가입
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="container py-5">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="border-top mt-5 py-3 bg-white">
+      <div class="container small text-muted d-flex justify-content-between">
+        <div>© {{ now|default:"2025" }} Aiary</div>
+        <div>
+          <span class="me-3">AI 기반 일기 분석 & 심리 상담 프로토타입</span>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

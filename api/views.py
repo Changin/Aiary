@@ -1,0 +1,89 @@
+# api/views.py
+import json
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from diary.models import CounselingSession, ChatTurn, DiaryEntry
+
+from openai import OpenAI
+
+client = OpenAI(api_key=settings.SECRETS.get("OPENAI_API_KEY", None))
+MODEL_NAME = settings.SECRETS.get("OPENAI_MODEL", "gpt-4.1-mini")
+
+
+@login_required
+@require_POST
+def chat_send(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+        session_id = int(payload.get("session_id"))
+        message = (payload.get("message") or "").strip()
+        if not message:
+            return HttpResponseBadRequest("empty message")
+    except Exception:
+        return HttpResponseBadRequest("bad json")
+
+    # 세션 소유권 검증
+    try:
+        session = CounselingSession.objects.select_related("user", "entry").get(
+            pk=session_id, user=request.user
+        )
+    except CounselingSession.DoesNotExist:
+        return HttpResponseBadRequest("invalid session")
+
+    # 사용자 턴 저장
+    user_turn = ChatTurn.objects.create(session=session, sender="user", message=message)
+
+    # 현재 일기 내용 가져오기 (컨텍스트에 활용)
+    entry: DiaryEntry = session.entry
+
+    # ---- OpenAI GPT 호출 ----
+    # 대화 히스토리(최근 n턴만) 구성
+    n = 8
+    recent_turns = list(
+        session.turns.order_by("-created_at")[:n]
+    )[::-1]  # 최신 n턴까지, 시간순으로 재정렬
+
+    messages = []
+
+    # 시스템 프롬프트
+    system_prompt = (
+        "너는 한국어 심리상담 보조자이다. 공감적이고 비판단적이며, "
+        "간단한 조언과 정서적 지지를 제공한다. 사용자의 감정을 인정하고, "
+        "명령조 대신 제안형 어투를 사용해라. 자/타해 위험이 의심되면 "
+        "전문기관 상담 또는 긴급 도움을 받으라는 안내를 포함해라."
+    )
+    messages.append({"role": "system", "content": system_prompt})
+
+    # 일기 요약 컨텍스트
+    if entry:
+        context_text = f"사용자의 오늘 일기 요약 컨텍스트:\n제목: {entry.title}\n내용: {entry.content}\n"
+        if entry.mood_self_report is not None:
+            context_text += f"자기 평가 기분 점수(1~10): {entry.mood_self_report}\n"
+        messages.append({"role": "system", "content": context_text})
+
+    # 과거 턴들을 messages에 쌓기
+    for t in recent_turns:
+        role = "assistant" if t.sender == "assistant" else "user"
+        messages.append({"role": role, "content": t.message})
+
+    # 마지막에 방금 질문 추가
+    messages.append({"role": "user", "content": message})
+
+    try:
+        completion = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=messages,
+            temperature=0.6,
+            max_tokens=400,
+        )
+        reply = completion.choices[0].message.content.strip()
+    except Exception as e:
+        # 에러 시 기본 메시지
+        reply = "현재 상담 서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
+
+    # 어시스턴트 턴 저장
+    ChatTurn.objects.create(session=session, sender="assistant", message=reply)
+
+    return JsonResponse({"reply": reply})

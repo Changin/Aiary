@@ -1,0 +1,25 @@
+<!--- 일기 목록 --->
+{% extends "base.html" %}
+{% block title %}내 일기 | Aiary{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">내 일기</h2>
+  <a href="{% url 'diary:create' %}" class="btn btn-primary">새 일기</a>
+</div>
+
+{% if object_list %}
+  <div class="list-group">
+    {% for e in object_list %}
+      <a href="{% url 'diary:detail' e.pk %}" class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">{{ e.title|default:"(제목 없음)" }}</h5>
+          <small class="text-muted">{{ e.entry_date|date:"Y-m-d" }}</small>
+        </div>
+        <p class="mb-1 text-truncate">{{ e.content }}</p>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="text-muted">아직 작성한 일기가 없습니다.</p>
+{% endif %}
+{% endblock %}

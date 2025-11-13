@@ -1,0 +1,111 @@
+<!--- 상세 보기 + 채팅 페이지 --->
+{% extends "base.html" %}
+{% block title %}일기 상세 | Aiary{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <!-- 좌: 일기 내용 -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+          <h2 class="h5 mb-0">{{ object.title|default:"(제목 없음)" }}</h2>
+          <small class="text-muted">{{ object.entry_date|date:"Y-m-d" }}</small>
+        </div>
+        <p class="mb-3" style="white-space:pre-wrap">{{ object.content }}</p>
+
+        <div class="d-flex gap-2">
+          <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary btn-sm">목록</a>
+          <a href="{% url 'diary:create' %}" class="btn btn-primary btn-sm">새 일기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우: 상담 챗 -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm" id="chatCard" data-session-id="{{ session.id }}">
+      <div class="card-body d-flex flex-column" style="height: 520px;">
+        <h2 class="h6 mb-3">Aiary Chatbot</h2>
+
+        <div id="chatLog" class="border rounded p-3 mb-3 flex-grow-1 overflow-auto bg-light small">
+          <!-- 메시지 목록이 JS로 채워짐 -->
+        </div>
+
+        {{ turns|json_script:"initial-turns-data" }}
+
+        <form id="chatForm" class="d-flex gap-2">
+          {% csrf_token %}
+          <input id="chatInput" class="form-control" placeholder="메시지를 입력하세요..." autocomplete="off">
+          <button class="btn btn-primary" type="submit">보내기</button>
+        </form>
+        <div id="chatHint" class="form-text mt-2">
+          * 현재는 프로토타입 응답입니다. (gpt-4.1-mini)
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const card = document.getElementById("chatCard");
+  const sessionId = card.dataset.sessionId;
+  const chatLog = document.getElementById("chatLog");
+  const chatForm = document.getElementById("chatForm");
+  const chatInput = document.getElementById("chatInput");
+
+  const initialTurns = JSON.parse(
+    document.getElementById("initial-turns-data").textContent
+  );
+
+  function appendBubble(sender, text){
+    const wrap = document.createElement("div");
+    wrap.className = sender === "user" ? "text-end mb-2" : "text-start mb-2";
+    const b = document.createElement("div");
+    b.className = sender === "user" ? "d-inline-block px-3 py-2 bg-primary text-white rounded-3"
+                                    : "d-inline-block px-3 py-2 bg-white border rounded-3";
+    b.style.maxWidth = "80%";
+    b.style.whiteSpace = "pre-wrap";
+    b.textContent = text;
+    wrap.appendChild(b);
+    chatLog.appendChild(wrap);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  // 페이지 로드 시 기존 턴들 먼저 렌더링
+  if (Array.isArray(initialTurns)) {
+    initialTurns.forEach(t => appendBubble(t.sender, t.message));
+  }
+
+  async function sendMessage(text){
+    appendBubble("user", text);
+    chatInput.value = "";
+    // CSRF 토큰
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    try {
+      const resp = await fetch("{% url 'api:chat_send' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken
+        },
+        body: JSON.stringify({ session_id: sessionId, message: text })
+      });
+      const data = await resp.json();
+      appendBubble("assistant", data.reply || "(응답 없음)");
+    } catch (e) {
+      appendBubble("assistant", "네트워크 오류가 발생했습니다.");
+    }
+  }
+
+  chatForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+    sendMessage(text);
+  });
+
+})();
+</script>
+{% endblock %}

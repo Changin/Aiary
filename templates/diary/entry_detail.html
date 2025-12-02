@@ -44,8 +44,11 @@
         <form id="chatForm" class="d-flex gap-2">
           {% csrf_token %}
           <input id="chatInput" class="form-control" placeholder="메시지를 입력하세요..." autocomplete="off">
-          <button class="btn btn-primary" type="submit">보내기</button>
+          <button id="chatSendBtn" class="btn btn-primary" type="submit">보내기</button>
         </form>
+        <!-- 로딩/에러 상태 표시용 -->
+        <div id="chatStatus" class="small mt-2 text-muted" style="min-height: 1.2em;"></div>
+
         <div id="chatHint" class="form-text mt-2">
           * 현재는 프로토타입 응답입니다. (gpt-4.1-mini)
         </div>
@@ -61,10 +64,15 @@
   const chatLog = document.getElementById("chatLog");
   const chatForm = document.getElementById("chatForm");
   const chatInput = document.getElementById("chatInput");
+  const chatSendBtn = document.getElementById("chatSendBtn");
+  const chatStatus = document.getElementById("chatStatus");
 
   const initialTurns = JSON.parse(
     document.getElementById("initial-turns-data").textContent
   );
+
+  let isLoading = false;
+
 
   function appendBubble(sender, text){
     const wrap = document.createElement("div");
@@ -80,16 +88,33 @@
     chatLog.scrollTop = chatLog.scrollHeight;
   }
 
-  // 페이지 로드 시 기존 턴들 먼저 렌더링
-  if (Array.isArray(initialTurns)) {
+  // ✅ 로딩 상태 토글
+  function setLoading(loading) {
+    isLoading = loading;
+    chatInput.disabled = loading;
+    chatSendBtn.disabled = loading;
+
+    if (loading) {
+      chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
+    } else {
+      chatStatus.textContent = "";
+    }
+  }
+
+  // ✅ 초기 턴 렌더링
+  if (Array.isArray(initialTurns) && initialTurns.length > 0) {
     initialTurns.forEach(t => appendBubble(t.sender, t.message));
+  } else {
+    // 원하면 세션이 비어있을 때 안내 문구를 넣을 수도 있음
+    // appendBubble("assistant", "오늘 일기를 들려주면, 여기에서 함께 이야기해볼 수 있어요.");
   }
 
   async function sendMessage(text){
     appendBubble("user", text);
     chatInput.value = "";
-    // CSRF 토큰
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    setLoading(true);
 
     try {
       const resp = await fetch("{% url 'api:chat_send' %}", {
@@ -100,15 +125,30 @@
         },
         body: JSON.stringify({ session_id: sessionId, message: text })
       });
+
+      if (!resp.ok) {
+        appendBubble("assistant", "서버에서 응답을 받지 못했어요. 잠시 후 다시 시도해 주세요.");
+        chatStatus.textContent = "요청 처리 중 문제가 발생했습니다. 잠시 뒤 다시 시도해 주세요.";
+        return;
+      }
+
       const data = await resp.json();
       appendBubble("assistant", data.reply || "(응답 없음)");
     } catch (e) {
-      appendBubble("assistant", "네트워크 오류가 발생했습니다.");
+      appendBubble("assistant", "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.");
+      chatStatus.textContent = "네트워크 오류로 인해 응답을 받지 못했습니다.";
+    } finally {
+      setLoading(false);
+      chatInput.focus();
     }
   }
 
   chatForm.addEventListener("submit", function(e){
     e.preventDefault();
+    if (isLoading) {
+      // ✅ 이미 요청 중이면 중복 전송 방지
+      return;
+    }
     const text = chatInput.value.trim();
     if (!text) return;
     sendMessage(text);

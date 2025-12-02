@@ -16,6 +16,14 @@
         <div class="d-flex gap-2">
           <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary btn-sm">목록</a>
           <a href="{% url 'diary:create' %}" class="btn btn-primary btn-sm">새 일기</a>
+          <!-- 수정 더미 버튼 (세션 재실행할지 플로우 설정 필요) -->
+          <button type="button" class="btn btn-outline-secondary btn-sm" disabled>
+            수정
+          </button>
+          <!-- 삭제 버튼 -->
+          <a href="{% url 'diary:delete' object.pk %}" class="btn btn-outline-danger btn-sm">
+            삭제
+          </a>
         </div>
       </div>
     </div>

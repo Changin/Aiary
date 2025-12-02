@@ -15,6 +15,7 @@ urlpatterns = [
     path("", views.EntryListView.as_view(), name="list"),
     path("new/", views.EntryCreateView.as_view(), name="create"),
     path("<int:pk>/", views.EntryDetailView.as_view(), name="detail"),  # 상세페이지
+    path("<int:pk>/delete/", views.EntryDeleteView.as_view(), name="delete"),   # 일기 삭제
 
     # 임시 placeholder
     # path("", placeholder, name="list"),

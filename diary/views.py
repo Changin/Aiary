@@ -1,7 +1,7 @@
 # diary/views.py
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
-from django.views.generic import ListView, CreateView, DetailView
+from django.views.generic import ListView, CreateView, DetailView, DeleteView
 from django.shortcuts import redirect
 from .models import DiaryEntry, CounselingSession, ChatTurn
 from .forms import DiaryEntryForm
@@ -67,3 +67,13 @@ class EntryDetailView(LoginRequiredMixin, DetailView):
             session.turns.values("sender", "message", "created_at").order_by("created_at")
         )
         return ctx
+
+
+class EntryDeleteView(LoginRequiredMixin, DeleteView):
+    model = DiaryEntry
+    template_name = "diary/entry_confirm_delete.html"
+    success_url = reverse_lazy("diary:list")
+
+    def get_queryset(self):
+        # ✅ 본인 일기만 삭제 가능하게 제한
+        return DiaryEntry.objects.filter(user=self.request.user)

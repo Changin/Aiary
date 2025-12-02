@@ -42,7 +42,7 @@ SECRET_KEY = get_secret("SECRET_KEY")
 DEBUG = bool(get_secret("DEBUG", False))
 
 # ALLOWED_HOSTS = ["*"]
-ALLOWED_HOSTS = ["43.200.105.74"]   # On Product
+ALLOWED_HOSTS = [get_secret("ALLOWED_HOSTS", "*")]
 
 
 # Application definition

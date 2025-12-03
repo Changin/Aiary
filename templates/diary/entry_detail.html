@@ -5,6 +5,55 @@
 <div class="row g-4">
   <!-- 좌: 일기 내용 -->
   <div class="col-lg-7">
+    <!-- 감정 분석 카드 -->
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6 mb-2">오늘의 감정 리포트</h2>
+          {% if object.summary or object.suggestions or object.emotion_vector.main_emotions %}
+            {% if object.summary %}
+              <div class="mb-2">
+                <div class="small text-muted mb-1">요약</div>
+                <p class="mb-0" style="white-space: pre-wrap;">{{ object.summary }}</p>
+              </div>
+            {% endif %}
+
+            {% with emotions=object.emotion_vector.main_emotions %}
+            {% if emotions %}
+              <div class="mb-2">
+                <div class="small text-muted mb-1">두드러지는 감정</div>
+                {% for emo in emotions %}
+                  <span class="badge bg-primary-subtle text-primary me-1 mb-1">{{ emo }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% endwith %}
+
+            <div class="mb-2">
+              <div class="small text-muted mb-1">자기 평가 기분 점수</div>
+              {% if object.mood_self_report %}
+                <span class="badge bg-secondary-subtle text-dark">
+                  {{ object.mood_self_report }}/10
+                </span>
+              {% else %}
+                <span class="text-muted small">입력된 점수가 없습니다.</span>
+              {% endif %}
+            </div>
+
+            {% if object.suggestions %}
+              <div class="mt-2">
+                <div class="small text-muted mb-1">오늘을 위한 작은 제안</div>
+                <p class="mb-0" style="white-space: pre-wrap;">{{ object.suggestions }}</p>
+              </div>
+            {% endif %}
+
+          {% else %}
+            <p class="text-muted small mb-0">
+              아직 이 일기에 대한 분석 정보가 없습니다. 새로 일기를 저장하거나, 분석 기능을 다시 실행해 주세요.
+            </p>
+          {% endif %}
+      </div>
+    </div>
+
     <div class="card border-0 shadow-sm">
       <div class="card-body">
         <div class="d-flex justify-content-between mb-2">
@@ -146,7 +195,7 @@
   chatForm.addEventListener("submit", function(e){
     e.preventDefault();
     if (isLoading) {
-      // ✅ 이미 요청 중이면 중복 전송 방지
+      // 이미 요청 중이면 중복 전송 방지
       return;
     }
     const text = chatInput.value.trim();

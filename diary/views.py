@@ -1,7 +1,7 @@
 # diary/views.py
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
-from django.views.generic import ListView, CreateView, DetailView, DeleteView
+from django.views.generic import ListView, CreateView, DetailView, DeleteView, TemplateView
 from django.shortcuts import redirect
 from .models import DiaryEntry, CounselingSession, ChatTurn
 from .forms import DiaryEntryForm
@@ -14,7 +14,7 @@ class EntryListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return DiaryEntry.objects.filter(user=self.request.user)
+        return DiaryEntry.objects.filter(user=self.request.user).order_by("-entry_date")
 
 
 class EntryCreateView(LoginRequiredMixin, CreateView):
@@ -77,3 +77,28 @@ class EntryDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         # ✅ 본인 일기만 삭제 가능하게 제한
         return DiaryEntry.objects.filter(user=self.request.user)
+
+
+class EntrySummaryView(LoginRequiredMixin, TemplateView):
+    template_name = "diary/entry_summary.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        qs = DiaryEntry.objects.filter(user=self.request.user).order_by("-entry_date", "created_at")
+
+        # 간단한 타임라인용 데이터
+        entries = []
+        for e in qs:
+            emotions = None
+            if isinstance(e.emotion_vector, dict):
+                emotions = e.emotion_vector.get("main_emotions", [])
+            entries.append({
+                "id": e.id,
+                "date": e.entry_date,
+                "title": e.title or "(제목 없음)",
+                "mood": e.mood_self_report,
+                "emotions": emotions or [],
+            })
+
+        ctx["entries"] = entries
+        return ctx

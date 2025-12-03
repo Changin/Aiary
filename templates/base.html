@@ -39,6 +39,9 @@
               <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:list' %}">
                 내 일기
               </a>
+              <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:summary' %}">
+                감정 리포트
+              </a>
               <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-outline-danger btn-sm">

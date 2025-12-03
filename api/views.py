@@ -11,6 +11,8 @@ from openai import OpenAI
 client = OpenAI(api_key=settings.SECRETS.get("OPENAI_API_KEY", None))
 MODEL_NAME = settings.SECRETS.get("OPENAI_MODEL", "gpt-4.1-mini")
 
+MAX_TURNS_PER_SESSION = 5
+
 
 @login_required
 @require_POST
@@ -31,6 +33,18 @@ def chat_send(request):
         )
     except CounselingSession.DoesNotExist:
         return HttpResponseBadRequest("invalid session")
+
+    # user 턴 개수 제한 체크
+    user_turn_count = session.turns.filter(sender="user").count()
+    if user_turn_count >= MAX_TURNS_PER_SESSION:
+        return JsonResponse(
+            {
+                "error": "turn_limit_reached",
+                "max_turns": MAX_TURNS_PER_SESSION,
+                "turns_used": user_turn_count,
+                "message": "이번 상담 세션의 무료 메시지 5개를 모두 사용했습니다.",
+            }
+        )
 
     # 사용자 턴 저장
     user_turn = ChatTurn.objects.create(session=session, sender="user", message=message)
@@ -86,4 +100,12 @@ def chat_send(request):
     # 어시스턴트 턴 저장
     ChatTurn.objects.create(session=session, sender="assistant", message=reply)
 
-    return JsonResponse({"reply": reply})
+    # 응답에 남은 턴 수 넣어주기
+    turns_used_after = user_turn_count + 1
+    return JsonResponse(
+        {
+            "reply": reply,
+            "max_turns": MAX_TURNS_PER_SESSION,
+            "turns_used": turns_used_after,
+        }
+    )

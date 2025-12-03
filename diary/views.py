@@ -66,6 +66,14 @@ class EntryDetailView(LoginRequiredMixin, DetailView):
         ctx["turns"] = list(
             session.turns.values("sender", "message", "created_at").order_by("created_at")
         )
+
+        # 무료 사용자 턴 제한 (세션당 5개)
+        MAX_TURNS = 5
+        used_turns = session.turns.filter(sender="user").count()
+        ctx["max_turns"] = MAX_TURNS
+        ctx["turns_used"] = used_turns
+        ctx["turns_remaining"] = max(0, MAX_TURNS - used_turns)
+
         return ctx
 
 

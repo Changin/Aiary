@@ -83,18 +83,36 @@
     <div class="card border-0 shadow-sm" id="chatCard" data-session-id="{{ session.id }}">
       <div class="card-body d-flex flex-column" style="height: 520px;">
         <h2 class="h6 mb-3">Aiary Chatbot</h2>
+        <span class="badge bg-secondary-subtle text-muted small">
+          남은 무료 메시지: <span id="turnsRemaining">{{ turns_remaining }}</span> / {{ max_turns }}
+        </span>
 
         <div id="chatLog" class="border rounded p-3 mb-3 flex-grow-1 overflow-auto bg-light small">
           <!-- 메시지 목록이 JS로 채워짐 -->
         </div>
 
         {{ turns|json_script:"initial-turns-data" }}
+        <script id="turn-info" type="application/json">
+          {
+            "max_turns": {{ max_turns }},
+            "turns_used": {{ turns_used }}
+          }
+        </script>
 
         <form id="chatForm" class="d-flex gap-2">
           {% csrf_token %}
           <input id="chatInput" class="form-control" placeholder="메시지를 입력하세요..." autocomplete="off">
-          <button id="chatSendBtn" class="btn btn-primary" type="submit">보내기</button>
+          <button id="chatSendBtn" class="btn btn-primary" type="submit">전송</button>
         </form>
+        <!-- 턴 다 썼을 때 노출할 결제(더미) 버튼 -->
+        <div id="upgradeWrapper" class="mt-2" style="display: none;">
+          <button id="upgradeBtn" class="btn btn-outline-primary w-100 btn-sm" type="button">
+            토큰 구매하고 상담 계속하기
+          </button>
+          <div class="small text-muted mt-1">
+            * 현재는 결제 연동 전 상태이며, 데모용 버튼입니다.
+          </div>
+        </div>
         <!-- 로딩/에러 상태 표시용 -->
         <div id="chatStatus" class="small mt-2 text-muted" style="min-height: 1.2em;"></div>
 
@@ -115,12 +133,21 @@
   const chatInput = document.getElementById("chatInput");
   const chatSendBtn = document.getElementById("chatSendBtn");
   const chatStatus = document.getElementById("chatStatus");
+  const upgradeWrapper = document.getElementById("upgradeWrapper");
+  const upgradeBtn = document.getElementById("upgradeBtn");
+  const turnsRemainingSpan = document.getElementById("turnsRemaining");
 
   const initialTurns = JSON.parse(
     document.getElementById("initial-turns-data").textContent
   );
 
+  const turnInfo = JSON.parse(
+    document.getElementById("turn-info").textContent
+  );
+
   let isLoading = false;
+  let maxTurns = turnInfo.max_turns;
+  let turnsUsed = turnInfo.turns_used;
 
 
   function appendBubble(sender, text){
@@ -137,7 +164,7 @@
     chatLog.scrollTop = chatLog.scrollHeight;
   }
 
-  // ✅ 로딩 상태 토글
+  // 로딩 상태 토글
   function setLoading(loading) {
     isLoading = loading;
     chatInput.disabled = loading;
@@ -150,13 +177,33 @@
     }
   }
 
-  // ✅ 초기 턴 렌더링
+  // ✅ 턴 정보 UI 업데이트
+  function updateTurnUI() {
+    const remaining = Math.max(0, maxTurns - turnsUsed);
+    if (turnsRemainingSpan) {
+      turnsRemainingSpan.textContent = remaining;
+    }
+
+    if (turnsUsed >= maxTurns) {
+      chatInput.disabled = true;
+      chatSendBtn.disabled = true;
+      upgradeWrapper.style.display = "block";
+      chatStatus.textContent = "무료 메시지 5개를 모두 사용했습니다.";
+    } else {
+      upgradeWrapper.style.display = "none";
+    }
+  }
+
+  // 초기 턴 렌더링
   if (Array.isArray(initialTurns) && initialTurns.length > 0) {
     initialTurns.forEach(t => appendBubble(t.sender, t.message));
   } else {
-    // 원하면 세션이 비어있을 때 안내 문구를 넣을 수도 있음
+    // 세션이 비어있을 때 안내 문구를 넣을 수도 있음
     // appendBubble("assistant", "오늘 일기를 들려주면, 여기에서 함께 이야기해볼 수 있어요.");
   }
+
+  // 초기 턴 상태 반영
+  updateTurnUI();
 
   async function sendMessage(text){
     appendBubble("user", text);
@@ -182,26 +229,54 @@
       }
 
       const data = await resp.json();
+
+      if (data.error === "turn_limit_reached") {
+        // ✅ 서버가 제한에 걸렸다고 알려줌
+        turnsUsed = data.turns_used || turnsUsed;
+        maxTurns = data.max_turns || maxTurns;
+        updateTurnUI();
+        appendBubble("assistant", data.message || "무료 메시지 한도를 모두 사용했습니다.");
+        return;
+      }
+
+      // 정상 응답
+      if (typeof data.turns_used === "number") {
+        turnsUsed = data.turns_used;
+      }
+      if (typeof data.max_turns === "number") {
+        maxTurns = data.max_turns;
+      }
+      updateTurnUI();
+
       appendBubble("assistant", data.reply || "(응답 없음)");
     } catch (e) {
       appendBubble("assistant", "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.");
       chatStatus.textContent = "네트워크 오류로 인해 응답을 받지 못했습니다.";
     } finally {
       setLoading(false);
-      chatInput.focus();
+      if (turnsUsed < maxTurns) {
+        chatInput.focus();
+      }
     }
   }
 
   chatForm.addEventListener("submit", function(e){
     e.preventDefault();
-    if (isLoading) {
-      // 이미 요청 중이면 중복 전송 방지
+    if (isLoading || turnsUsed >= maxTurns) {
+      // 이미 요청 중 또는 턴을 다 사용했을 때 중복 전송 방지
       return;
     }
     const text = chatInput.value.trim();
     if (!text) return;
     sendMessage(text);
   });
+
+  // 더미 결제 버튼 클릭 시
+  if (upgradeBtn) {
+    upgradeBtn.addEventListener("click", function(){
+      alert("현재는 데모 버전이며 실제 결제 기능은 제공되지 않습니다.");
+    });
+  }
 
 })();
 </script>

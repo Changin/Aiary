@@ -1,0 +1,20 @@
+.aiary-logo {
+    height: 20px
+    width: auto
+    max-height: 30px
+    max-width: 100%
+}
+
+/* Navbar 링크 기본 스타일 */
+
+.navbar-brand .aiary-logo {
+    height: 20px;
+    width: auto;
+    /* ... 나머지 스타일 */
+}
+
+/* Navbar 링크 호버(마우스 오버) 효과 */
+.navbar-nav .nav-item .nav-link:hover {
+    /* 호버 시 색상을 강조색으로 변경 */
+    color: #1a8a9a; /* Bootstrap 기본 파란색 또는 사용자 정의 색상 */
+}

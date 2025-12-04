@@ -1,98 +1,171 @@
 {% load static %}
 <!doctype html>
 <html lang="ko">
-  <head>
+<head>
     <meta charset="utf-8">
     <title>{% block title %}Aiary{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap 5 CDN -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
     >
     <!-- 프로젝트용 CSS (선택) -->
     <!-- link href="{# static 'css/aiary.css' #}" rel="stylesheet" -->
     <style>
-      html, body {
-        height: 100%;
-      }
+        html, body {
+          height: 100%;
+        }
 
-      body {
-            display: flex;
-            flex-direction: column;
-      }
+        body {
+              display: flex;
+              flex-direction: column;
+        }
 
-      .content-wrapper {
-        flex: 1;
-      }
+        .content-wrapper {
+          flex: 1;
+        }
     </style>
-  </head>
 
-  <body class="bg-light">
-    <div class="content-wrapper">
+    <!-- 파비콘 추가(준현)-->
+    <link rel="icon" type="image/png" href="{% static 'favicon-96x96.png' %}" sizes="96x96"/>
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}"/>
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}"/>
+    <link rel="manifest" href="{% static 'site.webmanifest' %}"/>
+</head>
+
+<body class="bg-light" style="
+        /* ------------------------------------------- */
+        /* 배경 이미지 인라인 스타일 적용 */
+        background-image: url('{% static 'background.png' %}');
+        background-size: cover;       /* 배경 이미지가 뷰포트를 완전히 덮도록 설정 */
+        background-repeat: no-repeat; /* 이미지 반복 방지 */
+        background-attachment: fixed; /* 배경 이미지를 뷰포트에 고정 (스크롤해도 움직이지 않음) */
+        background-color: #f0f8ff;    /* 이미지가 로딩되기 전 기본 배경색 (선택 사항) */
+        /* ------------------------------------------- */
+        ">
+<div class="content-wrapper">
     <!-- 상단 네비게이션 -->
     <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
-      <div class="container">
-        <a class="navbar-brand fw-semibold" href="{% url 'web:home' %}">
-          📝 Aiary
-        </a>
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'web:home' %}">
+                <img src="{% static 'Main logo.png' %}"
+                     alt="Aiary"
+                     class="aiary-logo d-inline-block align-text-top">
+            </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarAiary">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarAiary" style="
+            background-color: white;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            padding: 0;
+            align-items: center;
+            justify-content: center;
+            ">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <div class="collapse navbar-collapse" id="navbarAiary">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'web:home' %}">홈</a>
-            </li>
-            <!-- 향후 기능용 메뉴 자리 -->
-            <!-- <li class="nav-item"><a class="nav-link" href="#">기능 소개</a></li> -->
-          </ul>
+            <div class="collapse navbar-collapse" id="navbarAiary">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'web:home' %}"
+                           style="color: #000000; font-weight: bolder; text-decoration: none;">홈</a>
+                    </li>
+                    <!-- 향후 기능용 메뉴 자리 -->
+                    <!-- <li class="nav-item"><a class="nav-link" href="#">기능 소개</a></li> -->
+                </ul>
 
-          <div class="d-flex">
-            {% if user.is_authenticated %}
-              <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:list' %}">
-                내 일기
-              </a>
-              <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:summary' %}">
-                감정 리포트
-              </a>
-              <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger btn-sm">
-                  로그아웃
-                </button>
-              </form>
-            {% else %}
-              <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'accounts:login' %}">
-                로그인
-              </a>
-              <a class="btn btn-primary btn-sm" href="{% url 'accounts:signup' %}">
-                회원가입
-              </a>
-            {% endif %}
-          </div>
+                <div class="d-flex" style="
+                padding: 15px;
+                border-radius: 8px;
+                gap: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end; /* 오른쪽 정렬 */
+                ">
+                    {% if user.is_authenticated %}
+                    <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:list' %}" style="
+                        font-weight: bolder;
+                        font-size: 14px;
+                        padding: 5px 10px;
+                        border: 1px solid #1a8a9a;
+                        color: #1a8a9a;
+                        background-color: transparent;
+                        text-decoration: none;
+                        border-radius: 20px;
+                    ">
+                        내 일기
+                    </a>
+                    <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:summary' %}">
+                        감정 리포트
+                    </a>
+                    <form method="post" action="{% url 'accounts:logout' %}" class="d-inline" style="
+                        margin: 0;
+                    ">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm" style="
+                        font-size: 14px;
+                        font-weight: bolder;
+                        padding: 5px 10px;
+                        border: 1px solid #E31D1D;
+                        color: #E31D1D;
+                        background-color: transparent;
+                        border-radius: 20px;
+                        cursor: pointer;
+                        ">
+                            로그아웃
+                        </button>
+                    </form>
+                    {% else %}
+                    <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'accounts:login' %}" style="
+                    font-weight: bolder;
+                    font-size: 14px;
+                    padding: 6px 12px;
+                    border: 1px solid #1a8a9a;
+                    color: #1A9ABB;
+                    background-color: transparent;
+                    text-decoration: none;
+                    border-radius: 20px;
+                    ">
+                        로그인
+                    </a>
+                    <a class="btn btn-primary btn-sm" href="{% url 'accounts:signup' %}" style="
+                    font-weight: bolder;
+                    font-size: 14px;
+                    padding: 6px 12px;
+                    border: none;
+                    color: white;
+                    background-color: #1a8a9a;
+                    text-decoration: none;
+                    border-radius: 20px;
+                    ">
+                        회원가입
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-      </div>
     </nav>
 
     <!-- 메인 컨텐츠 -->
     <main class="container py-5">
-      {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
     </main>
-    </div>
+</div>
 
-    <!-- 푸터 -->
-    <footer class="border-top mt-5 py-3 bg-white">
-      <div class="container small text-muted d-flex justify-content-between">
+<!-- 푸터 -->
+<footer class="border-top mt-5 py-3 bg-white">
+    <div class="container small text-muted d-flex justify-content-between">
         <div>© {{ now|default:"2025" }} Aiary</div>
         <div>
-          <span class="me-3">AI 기반 일기 분석 & 심리 상담 챗봇 서비스</span>
+            <span class="me-3">AI 기반 일기 분석 & 심리 상담 챗봇 서비스</span>
         </div>
-      </div>
-    </footer>
+    </div>
+</footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

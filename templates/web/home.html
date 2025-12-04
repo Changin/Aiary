@@ -3,61 +3,180 @@
 {% block title %}Aiary | AI 일기 분석 & 심리상담{% endblock %}
 
 {% block content %}
-<div class="row align-items-center">
-  <!-- 왼쪽: 카피/버튼 -->
-  <div class="col-lg-7 mb-4 mb-lg-0">
-    <h1 class="display-5 fw-semibold mb-3">
-      당신의 하루를 이해하는<br>
-      AI 일기 분석 서비스, <span class="text-primary">Aiary</span>
-    </h1>
-    <p class="text-muted lead mb-4">
-      일기를 쓰면, Aiary가 감정의 흐름을 분석하고 공감 어린 피드백을 제공합니다.<br>
-      복잡한 고민은 익명성·보안성을 고려한 AI 상담 챗으로 이어갈 수 있어요.
-    </p>
+<div class="row align-items-center" style="
+    background-color: #fafaf8; /* 연한 베이지색 배경 */
+    padding: 50px 10px; /* 상하 패딩을 크게 설정 */
 
-    {% if user.is_authenticated %}
-      <a href="{% url 'diary:create' %}" class="btn btn-primary btn-lg me-2">
-        오늘 일기 쓰러가기
-      </a>
-      <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary btn-lg">
-        내 감정 변화 보기
-      </a>
-    {% else %}
-      <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-lg me-2">
-        무료로 시작하기
-      </a>
-      <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-lg">
-        이미 계정이 있다면 로그인
-      </a>
-    {% endif %}
-  </div>
+    /* 경계(Border) 속성 추가/강화 */
+    border-width: 2px;
+    border-style: solid;
+    border-color: #CCCCC7;
+    border-radius: 16px;
 
-  <!-- 오른쪽: 프로토타입 미니 UI 미리보기 -->
-  <div class="col-lg-5">
-    <div class="card shadow-sm border-0">
-      <div class="card-body">
-        <h5 class="card-title mb-3">Aiary 미리보기</h5>
-        <p class="small text-muted mb-3">
-          예시 일기
+    /* 시각적 효과 추가 */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* 은은한 그림자를 넣어 입체감 부여 */
+
+    /* 크기 및 위치 속성 (기존 값 유지) */
+    width: 98%;
+    max-width: 1400px;
+    min-height: 70vh;
+    margin: 0 auto;
+    ">
+    <!-- 왼쪽: 카피/버튼 -->
+    <div class="col-lg-7 mb-4 mb-lg-0" style="
+        padding: 20px; /* 내부 여백 추가 */
+    ">
+        <h1 class="display-5 fw-semibold mb-3" style="
+            font-size: 3rem; /* 글자 크기 조정 */
+            line-height: 1.3; /* 줄 간격 조정 */
+            color: #1A1A1A;
+            margin-bottom: 20px !important;
+        ">
+            당신의 하루를 이해하는<br>
+            AI 일기 분석 서비스, <span class="text-primary" style="color: #1a8a9a !important; /* 핵심 단어 색상 강조 */">Aiary</span>
+        </h1>
+        <p class="text-muted lead mb-4" style="
+            font-weight: bolder;
+            font-size: 1.15rem;            /* 글자 크기를 기본보다 조금 더 크게 설정 */
+            line-height: 1.6;              /* 줄 간격을 넓혀 가독성 향상 */
+            margin-bottom: 25px !important;/* 아래쪽 여백을 조금 더 확보 */
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+        ">
+            일기를 쓰면, Aiary가 감정의 흐름을 분석하고 공감 어린 피드백을 제공합니다.<br>
+            복잡한 고민은 익명성·보안성을 고려한 AI 상담 챗으로 이어갈 수 있어요.
         </p>
-        <div class="border rounded p-3 mb-3 bg-light">
-          오늘은 너무 지치고 답답한 하루였다. 해야 할 일은 많은데 진도가 안 나가고,
-          사람들과의 대화에서도 자꾸 예민하게 반응하게 된다...
-        </div>
-        <p class="small text-muted mb-2">
-          Aiary의 분석 예시
-        </p>
-        <ul class="list-unstyled small">
-          <li>• 전반적인 감정: 불안, 피로, 자기비판</li>
-          <li>• 주요 요인: 업무 압박, 대인관계에 대한 걱정</li>
-          <li>• 제안: 오늘은 스스로를 탓하기보다, 할 수 있었던 것에 초점을 맞춰보세요.</li>
-          <li>• 오늘의 성찰 질문 3가지: </li>
-        </ul>
-        <div class="text-end">
-          <span class="badge bg-primary-subtle text-primary">실제 서비스에서는 GPT 기반으로 분석</span>
-        </div>
-      </div>
+
+        {% if user.is_authenticated %}
+        <a href="{% url 'diary:create' %}" class="btn btn-primary btn-lg me-2" style="
+            font-weight: bolder;
+            font-size: 1.1rem;           /* 버튼 글자 크기 조정 */
+            padding: 12px 24px;          /* 버튼 내부 여백 확장 */
+            border-radius: 25px;          /* 모서리 둥글게 */
+            background-color: #1a8a9a;   /* 강조 색상 적용 */
+            border-color: #1a8a9a;
+            color: white;
+            text-decoration: none;
+        ">
+            오늘 일기 쓰러가기
+        </a>
+        <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary btn-lg" style="
+                    font-weight: bolder;
+                    font-size: 1.1rem;
+                    padding: 12px 24px;
+                    border-radius: 25px;
+                    color: #1a8a9a;
+                    border-color: #1a8a9a;
+                    background-color: transparent;
+                    text-decoration: none;
+        ">
+            내 감정 변화 보기
+        </a>
+        {% else %}
+        <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-lg me-2" style="
+            font-weight: bolder;
+            font-size: 1.1rem;
+            padding: 12px 24px;
+            border-radius: 25px;
+            background-color: #1a8a9a;
+            border-color: #1a8a9a;
+            color: white;
+            text-decoration: none;
+        ">
+            무료로 시작하기
+        </a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary btn-lg" style="
+            font-weight: bolder;
+            font-size: 1.1rem;
+            padding: 12px 24px;
+            border-radius: 25px;
+            color: #1a8a9a;
+            border-color: #1a8a9a;
+            background-color: transparent;
+            text-decoration: none;
+        ">
+            이미 계정이 있다면 로그인
+        </a>
+        {% endif %}
     </div>
-  </div>
+
+    <!-- 오른쪽: 프로토타입 미니 UI 미리보기 -->
+    <div class="col-lg-5" style="
+      padding: 15px; /* 컬럼 자체의 내부 여백 */
+    ">
+        <div class="card shadow-sm border-0" style="
+            background-color: #ffffff; /* 카드 배경을 흰색으로 설정 */
+            border: 1px solid #e9ecef; /* 아주 얇은 테두리 추가 */
+            border-radius: 16px;       /* 모서리를 부드럽게 둥글게 처리 */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08); /* 그림자 강화 */
+            transition: transform 0.3s ease; /* 마우스 오버 시 애니메이션 효과를 위한 트랜지션 추가 */
+        ">
+            <div class="card-body" style="
+                padding: 30px; /* 카드 내부 콘텐츠 여백 확대 */
+            ">
+                <h5 class="card-title mb-3" style="
+                    font-size: 1.5rem;             /* 제목 글자 크기 확대 */
+                    color: #1a8a9a;               /* 핵심 강조색 적용 */
+                    font-weight: 700;              /* 굵은 글씨 */
+                    border-bottom: 2px solid #e9ecef; /* 제목 아래 얇은 구분선 */
+                    padding-bottom: 10px;
+                    margin-bottom: 15px !important;
+                ">
+                    Aiary 미리보기
+                </h5>
+                <p class="small text-muted mb-3" style="
+                    font-size: 0.9rem;             /* 텍스트 크기 약간 축소 */                   color: #6c757d !important;     /* 텍스트 색상을 중간 회색으로 설정 */
+                    font-style: italic;            /* 이탤릭체 적용 */
+                ">
+                    예시 일기
+                </p>
+                <div class="border rounded p-3 mb-3 bg-light" style="
+                    background-color: #ffffff !important; /* 배경색을 흰색으로 명확히 지정 */
+                    border: 1px solid #ced4da !important;  /* 연한 테두리 */
+                    border-left: 5px solid #1a8a9a !important; /* 좌측에 강조색 세로줄 추가 */
+                    border-radius: 8px !important;
+                    font-size: 1.1rem;                     /* 글자 크기 확대 */
+                    line-height: 1.6;                      /* 줄 간격 확보 */
+                    color: #333333;                        /* 본문 색상 */
+                    padding: 20px !important;              /* 내부 여백 확대 */
+                    font-family: 'Malgun Gothic', sans-serif;
+                ">
+                    오늘은 너무 지치고 답답한 하루였다. 해야 할 일은 많은데 진도가 안 나가고,
+                    사람들과의 대화에서도 자꾸 예민하게 반응하게 된다...
+                </div>
+                <p class="small text-muted mb-2" style="
+                    font-size: 0.9rem;
+                    color: #6c757d !important;
+                    font-weight: 600; /* 분석 예시라는 텍스트를 굵게 처리 */
+                    margin-top: 15px;
+                    border-bottom: 1px dashed #e9ecef; /* 분석 시작을 알리는 점선 구분선 */
+                    padding-bottom: 5px;
+                ">
+                    Aiary의 분석 예시
+                </p>
+                <ul class="list-unstyled small" style="
+                    margin-top: 10px;
+                    padding-left: 0;
+                    font-size: 1rem;
+                    line-height: 1.8;
+                ">
+                    <li style="color: #9A2A1A; font-weight: bold; padding-left: 10px;">• 전반적인 감정: 불안, 피로, 자기비판</li>
+                    <li style="color: #6A1A9A; font-weight: bold; padding-left: 10px;">• 주요 요인: 업무 압박, 대인관계에 대한 걱정</li>
+                    <li style="color: #4A9A1A; font-weight: bold; padding-left: 10px; margin-top: 5px;">
+                        • 제안: 오늘은 스스로를 탓하기보다, 할 수 있었던 것에 초점을 맞춰보세요.
+                    </li>
+                    <li style="color: #1A8A9A; padding-left: 10px; margin-top: 10px;">• 오늘의 성찰 질문 3가지:</li>
+                </ul>
+                <div class="text-end" style="margin-top: 20px;">
+                    <span class="badge bg-primary-subtle text-primary" style="
+                        font-size: 0.85rem;
+                        padding: 6px 10px;
+                        background-color: #e6f3f5 !important; /* 밝은 강조색 배경 */
+                        color: #1a8a9a !important;            /* 강조색 텍스트 */
+                        border-radius: 5px;
+                    ">GPT-4 기반 분석</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

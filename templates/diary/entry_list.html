@@ -2,24 +2,87 @@
 {% extends "base.html" %}
 {% block title %}내 일기 | Aiary{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="h4 mb-0">내 일기</h2>
-  <a href="{% url 'diary:create' %}" class="btn btn-primary">새 일기</a>
+<div class="d-flex justify-content-between align-items-center mb-3" style="
+        /* 섹션 상단 제목 및 버튼 영역 스타일 */
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
+        margin-bottom: 25px !important;
+        font-family: 'Malgun Gothic', sans-serif;
+    ">
+    <h2 class="h4 mb-0" style="
+        /* 목록 페이지 제목 스타일 */
+        color: #1a1a1a;
+        font-weight: 700;
+        font-size: 1.8rem;
+        ">내 일기</h2>
+    <a href="{% url 'diary:create' %}" class="btn btn-primary" style="
+        /* 새 일기 버튼 스타일 */
+        background-color: #1a8a9a;
+        border-color: #1a8a9a;
+        font-weight: 600;
+        padding: 8px 18px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        ">새 일기</a>
 </div>
 
 {% if object_list %}
-  <div class="list-group">
+<div class="list-group" style="
+        /* 목록 그룹 컨테이너 스타일 */
+        border-radius: 16px;
+        overflow: hidden; /* 자식 항목의 둥근 모서리를 위해 */">
     {% for e in object_list %}
-      <a href="{% url 'diary:detail' e.pk %}" class="list-group-item list-group-item-action">
+    <a href="{% url 'diary:detail' e.pk %}" class="list-group-item list-group-item-action" style="
+            /* 개별 일기 항목 스타일 */
+            border: 1px solid #eee;
+            margin-bottom: 5px;
+            padding: 15px 20px;
+            border-radius: 16px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1); /* 은은한 그림자 */
+            /* :hover 효과는 인라인으로 불가능하지만, 기본 Bootstrap hover가 동작 */
+            ">
         <div class="d-flex w-100 justify-content-between">
-          <h5 class="mb-1">{{ e.title|default:"(제목 없음)" }}</h5>
-          <small class="text-muted">{{ e.entry_date|date:"Y-m-d" }}</small>
+            <h5 class="mb-1" style="
+                /* 일기 제목 스타일 */
+                color: #1a8a9a;
+                font-weight: 600;
+                font-size: 1.15rem;
+              ">{{ e.title|default:"(제목 없음)" }}</h5>
+            <small class="text-muted" style="
+                /* 날짜 스타일 */
+                color: #888 !important;
+                font-size: 0.8rem;
+                white-space: nowrap; /* 날짜는 줄 바꿈 방지 */
+              ">{{ e.entry_date|date:"Y-m-d" }}</small>
         </div>
-        <p class="mb-1 text-truncate">{{ e.content }}</p>
-      </a>
+        <p class="mb-1 text-truncate" style="
+                /* 일기 내용 미리보기 스타일 */
+                font-size: 0.95rem;
+                color: #555;
+                margin-top: 5px;
+            ">{{ e.content }}</p>
+    </a>
     {% endfor %}
-  </div>
+</div>
 {% else %}
-  <p class="text-muted">아직 작성한 일기가 없습니다.</p>
+<div style="
+        /* 작성된 일기가 없을 때 스타일 */
+        padding: 50px;
+        border: 1px dashed #ced4da;
+        border-radius: 10px;
+        text-align: center;
+        background-color: #f8f9fa;">
+    <p class="text-muted" style="
+            font-size: 1.1rem;
+            color: #6c757d !important;
+            margin-bottom: 0;
+        ">아직 작성한 일기가 없습니다.</p>
+    <p style="
+            font-size: 0.9rem;
+            color: #999;
+            margin-top: 5px;
+        ">위의 '새 일기' 버튼을 눌러 첫 일기를 작성해보세요!</p>
+</div>
 {% endif %}
 {% endblock %}

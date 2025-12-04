@@ -2,35 +2,117 @@
 {% extends "base.html" %}
 {% block title %}새 일기 | Aiary{% endblock %}
 {% block content %}
-<div class="row g-4">
-  <!-- 좌: 일기 작성 -->
-  <div class="col-lg-7">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <h2 class="h5 mb-3">오늘의 일기</h2>
-        <form method="post">
-          {% csrf_token %}
-          <div class="mb-3">{{ form.entry_date.label_tag }} {{ form.entry_date }}</div>
-          <div class="mb-3">{{ form.title.label_tag }} {{ form.title }}</div>
-          <div class="mb-3">{{ form.content.label_tag }} {{ form.content }}</div>
-          <div class="mb-3">{{ form.mood_self_report.label_tag }} {{ form.mood_self_report }}</div>
-          <div class="d-flex gap-2">
-            <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary">목록</a>
-            <button type="submit" class="btn btn-primary">저장하고 상담 시작</button>
-          </div>
-        </form>
-      </div>
+<div class="row g-4" style="font-family: 'Malgun Gothic', sans-serif;">
+    <!-- 좌: 일기 작성 -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm" style="
+                border-radius: 12px;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+                background-color: #fafaf8;
+            ">
+            <div class="card-body" style="
+                    padding: 30px;
+                ">
+                <h2 class="h5 mb-3" style="
+                        color: #1a1a1a;
+                        font-weight: 700;
+                        font-size: 1.5rem;
+                        border-bottom: 2px solid #e9ecef;
+                        padding-bottom: 10px;
+                        margin-bottom: 25px !important;
+                    ">오늘의 일기</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="date" class="form-label"
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.entry_date.label_tag }}</label>
+                        {{ form.entry_date }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="title" class="form-label"
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.title.label_tag }}</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.content.id_for_label }}" class="form-label"
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.content.label_tag }}</label>
+                        {{ form.content }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_image" class="form-label"
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">사진 첨부 (선택)</label>
+                        <input type="file" name="image" id="id_image" accept="image/*"
+                               class="form-control"
+                               style="
+                                    border-radius: 16px;
+                                    padding: 10px 15px;
+                                    font-size: 1rem;
+                                    border: 1px solid #a7aaae;
+                                    /* 💡 배경색을 카드 배경색과 동일하게 설정 또는 투명 처리 */
+                                    background-color: #fafaf8;
+                                    /* 파일 선택 버튼 자체는 브라우저가 그리므로, 이 배경색은 입력 영역 전체에 적용됨 */
+                                ">
+                    </div>
+                    <div class="mb-3">
+                        <label for="mood" class="form-label"
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.mood_self_report.label_tag }}</label>
+                        {{ form.mood_self_report }}
+                    </div>
+                    <div class="d-flex gap-2" style="margin-top: 30px;">
+                        <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary" style="
+                                border-radius: 25px;
+                                font-weight: bolder;
+                                padding: 10px 20px;
+                                border-color: #1a8a9a;
+                                color: #1a8a9a;
+                            ">목록</a>
+                        <button type="submit" class="btn btn-primary" style="
+                                border-radius: 25px;
+                                font-weight: bold;
+                                padding: 10px 20px;
+                                background-color: #1a8a9a;
+                                border-color: #1a8a9a;
+                                font-size: 1.05rem;
+                            ">저장하고 상담 시작
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- 우: 상담 패널 (새 일기 저장 전에는 비활성 안내) -->
-  <div class="col-lg-5">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <h2 class="h6 mb-2">AI 상담</h2>
-        <p class="text-muted small mb-0">일기를 저장하면 상담을 시작할 수 있습니다.</p>
-      </div>
+    <!-- 우: 상담 패널 (새 일기 저장 전에는 비활성 안내) -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm" style="
+                border-radius: 16px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+                background-color: #fafaf8;
+                min-height: 520px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            ">
+            <div class="card-body">
+                <h2 class="h6 mb-2" style="
+                        font-weight: 700;
+                        color: #1a8a9a;
+                        font-size: 1.25rem;
+                        margin-bottom: 10px !important;
+                    ">Aiary Chatbot</h2>
+                <p class="text-muted small mb-0" style="
+                        color: #666666 !important;
+                        font-size: 0.95rem;
+                        line-height: 1.5;
+                        padding: 10px 20px;
+                        border: 1px dashed #ced4da;
+                        border-radius: 16px;
+                    ">
+                    일기를 저장하면 AI가 내용을 분석하고,<br>
+                    심층적인 상담을 시작할 수 있습니다.
+                </p>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 {% endblock %}

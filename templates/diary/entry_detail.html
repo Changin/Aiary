@@ -3,281 +3,368 @@
 {% block title %}일기 상세 | Aiary{% endblock %}
 {% block content %}
 <div class="row g-4">
-  <!-- 좌: 일기 내용 -->
-  <div class="col-lg-7">
-    <!-- 감정 분석 카드 -->
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <h2 class="h6 mb-2">오늘의 감정 리포트</h2>
-          {% if object.summary or object.suggestions or object.emotion_vector.main_emotions %}
-            {% if object.summary %}
-              <div class="mb-2">
-                <div class="small text-muted mb-1">요약</div>
-                <p class="mb-0" style="white-space: pre-wrap;">{{ object.summary }}</p>
-              </div>
-            {% endif %}
+    <!-- 좌: 일기 내용 -->
+    <div class="col-lg-7">
+        <!-- 감정 분석 카드 -->
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h2 class="h6 mb-2">오늘의 감정 리포트</h2>
+                {% if object.summary or object.suggestions or object.emotion_vector.main_emotions %}
+                {% if object.summary %}
+                <div class="mb-2">
+                    <div class="small text-muted mb-1">요약</div>
+                    <p class="mb-0" style="white-space: pre-wrap;">{{ object.summary }}</p>
+                </div>
+                {% endif %}
 
-            {% with emotions=object.emotion_vector.main_emotions %}
-            {% if emotions %}
-              <div class="mb-2">
-                <div class="small text-muted mb-1">두드러지는 감정</div>
-                {% for emo in emotions %}
-                  <span class="badge bg-primary-subtle text-primary me-1 mb-1">{{ emo }}</span>
-                {% endfor %}
-              </div>
-            {% endif %}
-            {% endwith %}
+                {% with emotions=object.emotion_vector.main_emotions %}
+                {% if emotions %}
+                <div class="mb-2">
+                    <div class="small text-muted mb-1">두드러지는 감정</div>
+                    {% for emo in emotions %}
+                    <span class="badge bg-primary-subtle text-primary me-1 mb-1">{{ emo }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
 
-            <div class="mb-2">
-              <div class="small text-muted mb-1">자기 평가 기분 점수</div>
-              {% if object.mood_self_report %}
-                <span class="badge bg-secondary-subtle text-dark">
+                <div class="mb-2">
+                    <div class="small text-muted mb-1">자기 평가 기분 점수</div>
+                    {% if object.mood_self_report %}
+                    <span class="badge bg-secondary-subtle text-dark">
                   {{ object.mood_self_report }}/10
                 </span>
-              {% else %}
-                <span class="text-muted small">입력된 점수가 없습니다.</span>
-              {% endif %}
+                    {% else %}
+                    <span class="text-muted small">입력된 점수가 없습니다.</span>
+                    {% endif %}
+                </div>
+
+                {% if object.suggestions %}
+                <div class="mt-2">
+                    <div class="small text-muted mb-1">오늘을 위한 작은 제안</div>
+                    <p class="mb-0" style="white-space: pre-wrap;">{{ object.suggestions }}</p>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <p class="text-muted small mb-0">
+                    아직 이 일기에 대한 분석 정보가 없습니다. 새로 일기를 저장하거나, 분석 기능을 다시 실행해 주세요.
+                </p>
+                {% endif %}
             </div>
+        </div>
 
-            {% if object.suggestions %}
-              <div class="mt-2">
-                <div class="small text-muted mb-1">오늘을 위한 작은 제안</div>
-                <p class="mb-0" style="white-space: pre-wrap;">{{ object.suggestions }}</p>
-              </div>
-            {% endif %}
+        <div class="row g-4" style="font-family: 'Malgun Gothic', sans-serif;">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm" style="
+                                border-radius: 12px;
+                                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+                                ">
+                    <div class="card-body" style="
+                            padding: 30px;
+                            ">
+                        <div class="d-flex justify-content-between mb-2">
+                            <h2 class="h5 mb-0" style="
+                                color: #333;
+                                font-weight: 700;
+                                font-size: 1.5rem;
+                                ">{{ object.title|default:"(제목 없음)" }}</h2>
+                            <small class="text-muted" style="
+                                color: #888 !important;
+                                font-size: 0.85rem;
+                            ">{{ object.entry_date|date:"Y-m-d" }}</small>
+                        </div>
+                        <hr style="
+                            margin-top: 10px;
+                            margin-bottom: 20px;
+                            border-color: #eee;
+                        ">
+                        <p class="mb-3" style="
+                            white-space:pre-wrap;
+                            font-size: 1.05rem;
+                            line-height: 1.6;
+                            color: #444;
+                        ">{{ object.content }}</p>
 
-          {% else %}
-            <p class="text-muted small mb-0">
-              아직 이 일기에 대한 분석 정보가 없습니다. 새로 일기를 저장하거나, 분석 기능을 다시 실행해 주세요.
-            </p>
-          {% endif %}
-      </div>
+                        <div class="d-flex gap-2" style="margin-top: 20px;">
+                            <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary btn-sm" style="
+                                border-radius: 20px;
+                                font-weight: 500;
+                                border-color: #1a8a9a;
+                                color: #1a8a9a;
+                            ">목록</a>
+                            <a href="{% url 'diary:create' %}" class="btn btn-primary btn-sm" style="
+                                border-radius: 20px;
+                                font-weight: 500;
+                                background-color: #1a8a9a;
+                                border-color: #1a8a9a;
+                            ">새 일기</a>
+                            <!-- 수정 더미 버튼 (세션 재실행할지 플로우 설정 필요) -->
+                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled>
+                                수정
+                            </button>
+                            <!-- 삭제 버튼 -->
+                            <a href="{% url 'diary:delete' object.pk %}" class="btn btn-outline-danger btn-sm">
+                                삭제
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex justify-content-between mb-2">
-          <h2 class="h5 mb-0">{{ object.title|default:"(제목 없음)" }}</h2>
-          <small class="text-muted">{{ object.entry_date|date:"Y-m-d" }}</small>
-        </div>
-        <p class="mb-3" style="white-space:pre-wrap">{{ object.content }}</p>
+    <!-- 우: 상담 챗 -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm" id="chatCard" data-session-id="{{ session.id }}" style="
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+            ">
+            <div class="card-body d-flex flex-column" style="
+                height: 520px;
+                padding: 30px;
+                ">
+                <h2 class="h6 mb-3" style="
+                    font-weight: 700;
+                    color: #1a8a9a;
+                    border-bottom: 2px solid #e9ecef;
+                    padding-bottom: 10px;
+                    font-size: 1.25rem;
+                    ">Aiary Chatbot</h2>
+                <span class="badge bg-secondary-subtle text-muted small">
+                    남은 무료 메시지: <span id="turnsRemaining">{{ turns_remaining }}</span> / {{ max_turns }}
+                </span>
 
-        <div class="d-flex gap-2">
-          <a href="{% url 'diary:list' %}" class="btn btn-outline-secondary btn-sm">목록</a>
-          <a href="{% url 'diary:create' %}" class="btn btn-primary btn-sm">새 일기</a>
-          <!-- 수정 더미 버튼 (세션 재실행할지 플로우 설정 필요) -->
-          <button type="button" class="btn btn-outline-secondary btn-sm" disabled>
-            수정
-          </button>
-          <!-- 삭제 버튼 -->
-          <a href="{% url 'diary:delete' object.pk %}" class="btn btn-outline-danger btn-sm">
-            삭제
-          </a>
+                <div id="chatLog" class="border rounded p-3 mb-3 flex-grow-1 overflow-auto bg-light small" style="
+                    background-color: #f7f7f7 !important;
+                    border-radius: 16px !important;
+                    border: none !important;
+                    padding: 15px !important;
+                    font-size: 0.95rem;
+                    ">
+                    <!-- 메시지 목록이 JS로 채워짐 -->
+                </div>
+
+                {{ turns|json_script:"initial-turns-data" }}
+                <script id="turn-info" type="application/json">
+                    {
+                        "max_turns": {{max_turns}},
+                        "turns_used": {{turns_used}}
+                    }
+                </script>
+
+                <form id="chatForm" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input id="chatInput" class="form-control" placeholder="메시지를 입력하세요..." autocomplete="off" style="
+                        border-radius: 16px;
+                        padding: 10px 10px;
+                        font-size: 1rem;
+                        border-color: #ced4da;
+                    ">
+                    <button class="btn btn-primary" type="submit" style="
+                        font-size: 0.7rem;
+                        background-color: #1a8a9a;
+                        border-color: #1a8a9a;
+                        font-weight: bolder;
+                        border-radius: 20px;
+                        padding: 10px 10px;
+                        /* 텍스트 한 줄 유지를 위한 속성 추가 */
+                        white-space: nowrap;
+                    ">보내기</button>
+                </form>
+
+                <!-- 턴 다 썼을 때 노출할 결제(더미) 버튼 -->
+                <div id="upgradeWrapper" class="mt-2" style="display: none;">
+                    <button id="upgradeBtn" class="btn btn-outline-primary w-100 btn-sm" type="button">
+                        토큰 구매하고 상담 계속하기
+                    </button>
+                    <div class="small text-muted mt-1">
+                        * 현재는 결제 연동 전 상태이며, 데모용 버튼입니다.
+                    </div>
+                </div>
+
+                <!-- 로딩/에러 상태 표시용 -->
+                <div id="chatStatus" class="small mt-2 text-muted" style="min-height: 1.2em;"></div>
+
+                <div id="chatHint" class="form-text mt-2" style="
+                    font-size: 0.6rem;
+                    color: #888;
+                    text-align: right;
+                ">* 현재는 프로토타입 응답입니다. (gpt-4.1-mini)</div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-
-  <!-- 우: 상담 챗 -->
-  <div class="col-lg-5">
-    <div class="card border-0 shadow-sm" id="chatCard" data-session-id="{{ session.id }}">
-      <div class="card-body d-flex flex-column" style="height: 520px;">
-        <h2 class="h6 mb-3">Aiary Chatbot</h2>
-        <span class="badge bg-secondary-subtle text-muted small">
-          남은 무료 메시지: <span id="turnsRemaining">{{ turns_remaining }}</span> / {{ max_turns }}
-        </span>
-
-        <div id="chatLog" class="border rounded p-3 mb-3 flex-grow-1 overflow-auto bg-light small">
-          <!-- 메시지 목록이 JS로 채워짐 -->
-        </div>
-
-        {{ turns|json_script:"initial-turns-data" }}
-        <script id="turn-info" type="application/json">
-          {
-            "max_turns": {{ max_turns }},
-            "turns_used": {{ turns_used }}
-          }
-        </script>
-
-        <form id="chatForm" class="d-flex gap-2">
-          {% csrf_token %}
-          <input id="chatInput" class="form-control" placeholder="메시지를 입력하세요..." autocomplete="off">
-          <button id="chatSendBtn" class="btn btn-primary" type="submit">전송</button>
-        </form>
-        <!-- 턴 다 썼을 때 노출할 결제(더미) 버튼 -->
-        <div id="upgradeWrapper" class="mt-2" style="display: none;">
-          <button id="upgradeBtn" class="btn btn-outline-primary w-100 btn-sm" type="button">
-            토큰 구매하고 상담 계속하기
-          </button>
-          <div class="small text-muted mt-1">
-            * 현재는 결제 연동 전 상태이며, 데모용 버튼입니다.
-          </div>
-        </div>
-        <!-- 로딩/에러 상태 표시용 -->
-        <div id="chatStatus" class="small mt-2 text-muted" style="min-height: 1.2em;"></div>
-
-        <div id="chatHint" class="form-text mt-2">
-          * 현재는 프로토타입 응답입니다. (gpt-4.1-mini)
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
-(function(){
-  const card = document.getElementById("chatCard");
-  const sessionId = card.dataset.sessionId;
-  const chatLog = document.getElementById("chatLog");
-  const chatForm = document.getElementById("chatForm");
-  const chatInput = document.getElementById("chatInput");
-  const chatSendBtn = document.getElementById("chatSendBtn");
-  const chatStatus = document.getElementById("chatStatus");
-  const upgradeWrapper = document.getElementById("upgradeWrapper");
-  const upgradeBtn = document.getElementById("upgradeBtn");
-  const turnsRemainingSpan = document.getElementById("turnsRemaining");
+    (function(){
+      const card = document.getElementById("chatCard");
+      const sessionId = card.dataset.sessionId;
+      const chatLog = document.getElementById("chatLog");
+      const chatForm = document.getElementById("chatForm");
+      const chatInput = document.getElementById("chatInput");
+      const chatSendBtn = document.getElementById("chatSendBtn");
+      const chatStatus = document.getElementById("chatStatus");
+      const upgradeWrapper = document.getElementById("upgradeWrapper");
+      const upgradeBtn = document.getElementById("upgradeBtn");
+      const turnsRemainingSpan = document.getElementById("turnsRemaining");
 
-  const initialTurns = JSON.parse(
-    document.getElementById("initial-turns-data").textContent
-  );
+      const initialTurns = JSON.parse(
+        document.getElementById("initial-turns-data").textContent
+      );
 
-  const turnInfo = JSON.parse(
-    document.getElementById("turn-info").textContent
-  );
+      const turnInfo = JSON.parse(
+        document.getElementById("turn-info").textContent
+      );
 
-  let isLoading = false;
-  let maxTurns = turnInfo.max_turns;
-  let turnsUsed = turnInfo.turns_used;
+      let isLoading = false;
+      let maxTurns = turnInfo.max_turns;
+      let turnsUsed = turnInfo.turns_used;
 
 
-  function appendBubble(sender, text){
-    const wrap = document.createElement("div");
-    wrap.className = sender === "user" ? "text-end mb-2" : "text-start mb-2";
-    const b = document.createElement("div");
-    b.className = sender === "user" ? "d-inline-block px-3 py-2 bg-primary text-white rounded-3"
-                                    : "d-inline-block px-3 py-2 bg-white border rounded-3";
-    b.style.maxWidth = "80%";
-    b.style.whiteSpace = "pre-wrap";
-    b.textContent = text;
-    wrap.appendChild(b);
-    chatLog.appendChild(wrap);
-    chatLog.scrollTop = chatLog.scrollHeight;
-  }
+      function appendBubble(sender, text){
+        const wrap = document.createElement("div");
+        wrap.className = sender === "user" ? "text-end mb-2" : "text-start mb-2";
+        const b = document.createElement("div");
+        b.className = sender === "user" ? "d-inline-block px-3 py-2 bg-primary text-white rounded-3"
+                                        : "d-inline-block px-3 py-2 bg-white border rounded-3";
+        // 스타일 속성 직접 적용
+        b.style.maxWidth = "85%";
+        b.style.whiteSpace = "pre-wrap";
+        b.style.fontSize = "0.95rem";
+        b.textContent = text;
 
-  // 로딩 상태 토글
-  function setLoading(loading) {
-    isLoading = loading;
-    chatInput.disabled = loading;
-    chatSendBtn.disabled = loading;
+        if (sender === "user") {
+                        b.style.backgroundColor = "#1a8a9a"; // 사용자: 강조색 배경
+                        b.style.color = "white";
+                        b.style.border = "none";
+                        b.style.borderRadius = "15px 15px 0 15px"; // 우상단, 우하단, 좌하단, 좌상단 순서
+                    } else {
+                        b.style.backgroundColor = "#ffffff"; // 챗봇: 흰색 배경
+                        b.style.color = "#333";
+                        b.style.border = "1px solid #ced4da";
+                        b.style.borderRadius = "15px 15px 15px 0"; // 좌상단, 우상단, 우하단, 좌하단 순서
+                    }
 
-    if (loading) {
-      chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
-    } else {
-      chatStatus.textContent = "";
-    }
-  }
-
-  // ✅ 턴 정보 UI 업데이트
-  function updateTurnUI() {
-    const remaining = Math.max(0, maxTurns - turnsUsed);
-    if (turnsRemainingSpan) {
-      turnsRemainingSpan.textContent = remaining;
-    }
-
-    if (turnsUsed >= maxTurns) {
-      chatInput.disabled = true;
-      chatSendBtn.disabled = true;
-      upgradeWrapper.style.display = "block";
-      chatStatus.textContent = "무료 메시지 5개를 모두 사용했습니다.";
-    } else {
-      upgradeWrapper.style.display = "none";
-    }
-  }
-
-  // 초기 턴 렌더링
-  if (Array.isArray(initialTurns) && initialTurns.length > 0) {
-    initialTurns.forEach(t => appendBubble(t.sender, t.message));
-  } else {
-    // 세션이 비어있을 때 안내 문구를 넣을 수도 있음
-    // appendBubble("assistant", "오늘 일기를 들려주면, 여기에서 함께 이야기해볼 수 있어요.");
-  }
-
-  // 초기 턴 상태 반영
-  updateTurnUI();
-
-  async function sendMessage(text){
-    appendBubble("user", text);
-    chatInput.value = "";
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-    setLoading(true);
-
-    try {
-      const resp = await fetch("{% url 'api:chat_send' %}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrftoken
-        },
-        body: JSON.stringify({ session_id: sessionId, message: text })
-      });
-
-      if (!resp.ok) {
-        appendBubble("assistant", "서버에서 응답을 받지 못했어요. 잠시 후 다시 시도해 주세요.");
-        chatStatus.textContent = "요청 처리 중 문제가 발생했습니다. 잠시 뒤 다시 시도해 주세요.";
-        return;
+        wrap.appendChild(b);
+        chatLog.appendChild(wrap);
+        chatLog.scrollTop = chatLog.scrollHeight;
       }
 
-      const data = await resp.json();
+      // 로딩 상태 토글
+      function setLoading(loading) {
+        isLoading = loading;
+        chatInput.disabled = loading;
+        chatSendBtn.disabled = loading;
 
-      if (data.error === "turn_limit_reached") {
-        // ✅ 서버가 제한에 걸렸다고 알려줌
-        turnsUsed = data.turns_used || turnsUsed;
-        maxTurns = data.max_turns || maxTurns;
-        updateTurnUI();
-        appendBubble("assistant", data.message || "무료 메시지 한도를 모두 사용했습니다.");
-        return;
+        if (loading) {
+          chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
+        } else {
+          chatStatus.textContent = "";
+        }
       }
 
-      // 정상 응답
-      if (typeof data.turns_used === "number") {
-        turnsUsed = data.turns_used;
+      // ✅ 턴 정보 UI 업데이트
+      function updateTurnUI() {
+        const remaining = Math.max(0, maxTurns - turnsUsed);
+        if (turnsRemainingSpan) {
+          turnsRemainingSpan.textContent = remaining;
+        }
+
+        if (turnsUsed >= maxTurns) {
+          chatInput.disabled = true;
+          chatSendBtn.disabled = true;
+          upgradeWrapper.style.display = "block";
+          chatStatus.textContent = "무료 메시지 5개를 모두 사용했습니다.";
+        } else {
+          upgradeWrapper.style.display = "none";
+        }
       }
-      if (typeof data.max_turns === "number") {
-        maxTurns = data.max_turns;
+
+      // 초기 턴 렌더링
+      if (Array.isArray(initialTurns) && initialTurns.length > 0) {
+        initialTurns.forEach(t => appendBubble(t.sender, t.message));
+      } else {
+        // 세션이 비어있을 때 안내 문구를 넣을 수도 있음
+        // appendBubble("assistant", "오늘 일기를 들려주면, 여기에서 함께 이야기해볼 수 있어요.");
       }
+
+      // 초기 턴 상태 반영
       updateTurnUI();
 
-      appendBubble("assistant", data.reply || "(응답 없음)");
-    } catch (e) {
-      appendBubble("assistant", "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.");
-      chatStatus.textContent = "네트워크 오류로 인해 응답을 받지 못했습니다.";
-    } finally {
-      setLoading(false);
-      if (turnsUsed < maxTurns) {
-        chatInput.focus();
+      async function sendMessage(text){
+        appendBubble("user", text);
+        chatInput.value = "";
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        setLoading(true);
+
+        try {
+          const resp = await fetch("{% url 'api:chat_send' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken
+            },
+            body: JSON.stringify({ session_id: sessionId, message: text })
+          });
+
+          if (!resp.ok) {
+            appendBubble("assistant", "서버에서 응답을 받지 못했어요. 잠시 후 다시 시도해 주세요.");
+            chatStatus.textContent = "요청 처리 중 문제가 발생했습니다. 잠시 뒤 다시 시도해 주세요.";
+            return;
+          }
+
+          const data = await resp.json();
+
+          if (data.error === "turn_limit_reached") {
+            // ✅ 서버가 제한에 걸렸다고 알려줌
+            turnsUsed = data.turns_used || turnsUsed;
+            maxTurns = data.max_turns || maxTurns;
+            updateTurnUI();
+            appendBubble("assistant", data.message || "무료 메시지 한도를 모두 사용했습니다.");
+            return;
+          }
+
+          // 정상 응답
+          if (typeof data.turns_used === "number") {
+            turnsUsed = data.turns_used;
+          }
+          if (typeof data.max_turns === "number") {
+            maxTurns = data.max_turns;
+          }
+          updateTurnUI();
+
+          appendBubble("assistant", data.reply || "(응답 없음)");
+        } catch (e) {
+          appendBubble("assistant", "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.");
+          chatStatus.textContent = "네트워크 오류로 인해 응답을 받지 못했습니다.";
+        } finally {
+          setLoading(false);
+          if (turnsUsed < maxTurns) {
+            chatInput.focus();
+          }
+        }
       }
-    }
-  }
 
-  chatForm.addEventListener("submit", function(e){
-    e.preventDefault();
-    if (isLoading || turnsUsed >= maxTurns) {
-      // 이미 요청 중 또는 턴을 다 사용했을 때 중복 전송 방지
-      return;
-    }
-    const text = chatInput.value.trim();
-    if (!text) return;
-    sendMessage(text);
-  });
+      chatForm.addEventListener("submit", function(e){
+        e.preventDefault();
+        if (isLoading || turnsUsed >= maxTurns) {
+          // 이미 요청 중 또는 턴을 다 사용했을 때 중복 전송 방지
+          return;
+        }
+        const text = chatInput.value.trim();
+        if (!text) return;
+        sendMessage(text);
+      });
 
-  // 더미 결제 버튼 클릭 시
-  if (upgradeBtn) {
-    upgradeBtn.addEventListener("click", function(){
-      alert("현재는 데모 버전이며 실제 결제 기능은 제공되지 않습니다.");
-    });
-  }
+      // 더미 결제 버튼 클릭 시
+      if (upgradeBtn) {
+        upgradeBtn.addEventListener("click", function(){
+          alert("현재는 데모 버전이며 실제 결제 기능은 제공되지 않습니다.");
+        });
+      }
 
-})();
+    })();
 </script>
 {% endblock %}

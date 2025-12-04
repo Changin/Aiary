@@ -3,49 +3,184 @@
 {% block title %}회원가입 | Aiary{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-5">
-    <h2 class="mb-4 text-center">회원가입</h2>
+<div class="row justify-content-center" style="
+      /* 폼 전체를 감싸는 컨테이너 스타일 */
+      min-height: 80vh;
+      align-items: center;
+      padding-top: 50px;
+    ">
+    <div class="col-md-5" style="
+          /* 폼 카드 스타일 */
+          padding: 40px;
+          border: 1px solid #dee2e6;
+          border-radius: 12px;
+          background-color: #ffffff;
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+          font-family: 'Malgun Gothic', sans-serif;
+        ">
+        <h2 class="mb-4 text-center" style="
+              /* 제목 스타일 */
+              color: #333333;
+              font-weight: 700;
+              font-size: 2rem;
+              margin-bottom: 30px !important;
+              border-bottom: 3px solid #1a8a9a;
+              padding-bottom: 15px;
+            ">회원가입</h2>
 
-    <form method="post" novalidate>
-      {% csrf_token %}
-      {% if form.errors %}
-        <div class="alert alert-danger small">
-          입력값을 다시 확인해주세요.
-        </div>
-      {% endif %}
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.errors %}
+            <div class="alert alert-danger small" style="
+                        /* 에러 메시지 스타일 */
+                        background-color: #f8d7da;
+                        color: #721c24;
+                        border-color: #f5c6cb;
+                        font-size: 0.95rem;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        margin-bottom: 25px;
+                        text-align: center;
+                    ">
+                입력값을 다시 확인해주세요.
+            </div>
+            {% endif %}
 
-      <div class="mb-3">
-        <label for="id_username" class="form-label">아이디</label>
-        {{ form.username }}
-        {% for error in form.username.errors %}
-          <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
-      </div>
+            <div class="mb-3">
+                <label for="id_username" class="form-label" style="
+                      /* 레이블 스타일 */
+                      font-weight: 600;
+                      color: #495057;
+                      margin-bottom: 8px;
+                    ">아이디</label>
+                <input type="{{ form.username.field.widget.input_type }}"
+                       name="{{ form.username.name }}"
+                       id="id_username"
+                       class="form-control"
+                       placeholder="ID"
+                       style="
+                             /* 입력 필드 스타일 */
+                             border-radius: 6px;
+                             border: 1px solid #ced4da;
+                             padding: 10px 15px;
+                             height: auto;
+                             font-size: 1rem;
+                           "
+                       {% if form.username.field.required %}required{% endif %}
+                       {% for key, value in form.username.field.widget.attrs.items %}
+                       {{ key }}="{{ value }}"
+                       {% endfor %}
+                >
+                {% for error in form.username.errors %}
+                <div class="text-danger small">
+                    <div class="text-danger small" style="
+                          /* 개별 에러 메시지 스타일 */
+                          font-size: 0.85rem;
+                          margin-top: 5px;
+                          color: #dc3545 !important;
+                        ">{{ error }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
 
-      <div class="mb-3">
-        <label for="id_password1" class="form-label">비밀번호</label>
-        {{ form.password1 }}
-        {% for error in form.password1.errors %}
-          <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
-      </div>
+            <div class="mb-3">
+                <label for="id_password1" class="form-label" style="
+                      /* 레이블 스타일 */
+                      font-weight: 600;
+                      color: #495057;
+                      margin-bottom: 8px;
+                    ">비밀번호</label>
+                <input type="{{ form.password1.field.widget.input_type }}"
+                       name="{{ form.password1.name }}"
+                       id="id_password1"
+                       class="form-control"
+                       placeholder="비밀번호"
+                       style="
+                             /* 입력 필드 스타일 */
+                             border-radius: 6px;
+                             border: 1px solid #ced4da;
+                             padding: 10px 15px;
+                             height: auto;
+                             font-size: 1rem;
+                           "
+                       {% if form.password1.field.required %}required{% endif %}
+                       {% for key, value in form.password1.field.widget.attrs.items %}{{ key }}="{{ value }}" {% endfor %}
+                >
+                {% for error in form.password1.errors %}
+                <div class="text-danger small" style="
+                          /* 개별 에러 메시지 스타일 */
+                          font-size: 0.85rem;
+                          margin-top: 5px;
+                          color: #dc3545 !important;
+                        ">{{ error }}
+                </div>
+                {% endfor %}
+            </div>
 
-      <div class="mb-3">
-        <label for="id_password2" class="form-label">비밀번호 확인</label>
-        {{ form.password2 }}
-        {% for error in form.password2.errors %}
-          <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
-      </div>
+            <div class="mb-3">
+                <label for="id_password2" class="form-label" style="
+                      /* 레이블 스타일 */
+                      font-weight: 600;
+                      color: #495057;
+                      margin-bottom: 8px;
+                    ">비밀번호 확인</label>
+                <input type="{{ form.password2.field.widget.input_type }}"
+                       name="{{ form.password2.name }}"
+                       id="{{ form.password2.id_for_label }}"
+                       class="form-control"
+                       placeholder="비밀번호 재입력"
+                       style="
+                             /* 입력 필드 스타일 */
+                             border-radius: 6px;
+                             border: 1px solid #ced4da;
+                             padding: 10px 15px;
+                             height: auto;
+                             font-size: 1rem;
+                           "
+                       {% if form.password2.field.required %}required{% endif %}
+                       {% for key, value in form.password2.field.widget.attrs.items %}{{ key }}="{{ value }}" {% endfor %}
+                >
+                {% for error in form.password2.errors %}
+                <div class="text-danger small" style="
+                          /* 개별 에러 메시지 스타일 */
+                          font-size: 0.85rem;
+                          margin-top: 5px;
+                          color: #dc3545 !important;
+                        ">{{ error }}
+                </div>
+                {% endfor %}
+            </div>
 
-      <button type="submit" class="btn btn-primary w-100">회원가입 완료</button>
-    </form>
+            <button type="submit" class="btn btn-primary w-100" style="
+                  /* 버튼 스타일 */
+                  margin-top: 20px;
+                  background-color: #1a8a9a;
+                  border-color: #1a8a9a;
+                  font-weight: 700;
+                  padding: 12px 0;
+                  border-radius: 8px;
+                  font-size: 1.1rem;
+                  transition: background-color 0.3s ease;
+                ">회원가입 완료
+            </button>
+        </form>
 
-    <p class="mt-3 text-center small text-muted">
-      이미 계정이 있나요?
-      <a href="{% url 'accounts:login' %}">로그인</a>
-    </p>
-  </div>
+        <p class="mt-3 text-center small text-muted" style="
+              /* 하단 안내 텍스트 스타일 */
+              margin-top: 25px !important;
+              font-size: 0.95rem !important;
+              color: #888888 !important;
+            ">
+            이미 계정이 있나요?
+            <a href="{% url 'accounts:login' %}" style="
+                  /* 로그인 링크 스타일 */
+                  color: #1a8a9a;
+                  font-weight: 600;
+                  text-decoration: none;
+                  margin-left: 5px;
+                ">로그인</a>
+        </p>
+    </div>
 </div>
 {% endblock %}

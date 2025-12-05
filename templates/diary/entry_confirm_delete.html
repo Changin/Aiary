@@ -2,38 +2,81 @@
 {% block title %}일기 삭제 | Aiary{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-7">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <h2 class="h5 mb-3">일기 삭제</h2>
-        <p class="mb-3">
-          아래 일기를 정말 삭제할까요? 이 일기와 연결된 상담 기록도 함께 삭제됩니다.
-        </p>
+<div class="row justify-content-center" style="font-family: 'Malgun Gothic', sans-serif;">
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm" style="
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+        background-color: #ffffff;
+        ">
+            <div class="card-body" style="padding: 30px;">
+                <h2 class="h5 mb-3" style="
+            color: #E31D1D; /* 삭제 강조색 */
+            font-weight: 700;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #EE7878;
+            padding-bottom: 10px;
+            margin-bottom: 25px !important;
+                ">일기 삭제 확인</h2>
 
-        <div class="border rounded p-3 mb-3 bg-light">
-          <div class="d-flex justify-content-between mb-2">
-            <strong>{{ object.title|default:"(제목 없음)" }}</strong>
-            <small class="text-muted">{{ object.entry_date|date:"Y-m-d" }}</small>
-          </div>
-          <p class="mb-0 small" style="white-space: pre-wrap;">
-            {{ object.content }}
-          </p>
+                <p class="mb-4" style="
+            font-size: 1.05rem;
+            color: #343a40;
+            line-height: 1.5;
+            font-weight: 500;
+                ">
+                    <strong style="color: #EE7878;">경고:</strong> 아래 일기를 정말 삭제할까요? 이 일기와 연결된 상담 기록도 <strong
+                        style="color: #E31D1D;">함께 영구적으로 삭제</strong>됩니다.
+                </p>
+
+                <div class="border rounded p-3 mb-4 bg-light" style="
+            border: 1px solid #EE7878 !important; /* 경고를 위한 테두리 색상 */
+            border-radius: 12px !important;
+            background-color: #fff4f4 !important; /* 아주 연한 경고 배경 */
+        ">
+                    <div class="d-flex justify-content-between mb-2">
+                        <strong style="color: #1A1A1A; font-size: 1.1rem;">{{ object.title|default:"(제목 없음)" }}</strong>
+                        <small class="text-muted" style="color: #6C7278 !important; font-size: 0.85rem;">{{ object.entry_date|date:"Y-m-d" }}</small>
+                    </div>
+                    <p class="mb-0 small" style="
+            white-space: pre-wrap;
+            color: #6C7278;
+            font-size: 0.95rem;
+            max-height: 100px; /* 미리보기 높이 제한 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+          ">
+                        {{ object.content }}
+                    </p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2 justify-content-end" style="margin-top: 30px;">
+                        <a href="{% url 'diary:detail' object.pk %}" class="btn btn-outline-secondary" style="
+                border-radius: 25px;
+                font-weight: bolder;
+                padding: 10px 20px;
+                border-color: #1A1A1A;
+                color: #1A1A1A;
+                background-color: transparent;
+            ">
+                            취소
+                        </a>
+                        <button type="submit" class="btn btn-danger" style="
+                border-radius: 25px;
+                font-weight: bold;
+                padding: 10px 20px;
+                background-color: #E31D1D; /* 삭제 버튼 색상 */
+                border-color: #E31D1D;
+                font-size: 1.05rem;
+            ">
+                            영구 삭제
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <form method="post">
-          {% csrf_token %}
-          <div class="d-flex gap-2">
-            <a href="{% url 'diary:detail' object.pk %}" class="btn btn-outline-secondary">
-              취소
-            </a>
-            <button type="submit" class="btn btn-danger">
-              삭제
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
-  </div>
 </div>
 {% endblock %}

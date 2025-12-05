@@ -99,7 +99,17 @@
                     ">
                         내 일기
                     </a>
-                    <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:summary' %}">
+                    <a class="btn btn-outline-secondary btn-sm me-2" href="{% url 'diary:summary' %}" style="
+                        font-weight: bolder;
+                        font-size: 14px;
+                        padding: 5px 10px;
+                        border: 1px solid #8A9A1A;
+                        color: #8A9A1A;
+                        background-color: transparent;
+                        text-decoration: none;
+                        border-radius: 20px;
+                        white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+                    ">
                         감정 리포트
                     </a>
                     <form method="post" action="{% url 'accounts:logout' %}" class="d-inline" style="

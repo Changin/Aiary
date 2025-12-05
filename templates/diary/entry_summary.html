@@ -2,63 +2,181 @@
 {% block title %}감정 리포트 | Aiary{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2 class="h4 mb-0">감정 리포트</h2>
-  <a href="{% url 'diary:create' %}" class="btn btn-primary btn-sm">새 일기</a>
-</div>
+<div style="font-family: 'Malgun Gothic', sans-serif;">
 
-<p class="text-muted small mb-4">
-  작성한 일기들을 기준으로, 날짜별 기분 점수와 주요 감정들을 한 눈에 볼 수 있어요.
-</p>
-
-{% if entries %}
-  <div class="table-responsive">
-    <table class="table table-sm align-middle">
-      <thead class="table-light">
-        <tr>
-          <th scope="col" style="width: 120px;">날짜</th>
-          <th scope="col">제목</th>
-          <th scope="col" style="width: 120px;">기분 점수</th>
-          <th scope="col" style="width: 220px;">주요 감정</th>
-          <th scope="col" style="width: 80px;"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for e in entries %}
-          <tr>
-            <td>{{ e.date|date:"Y-m-d" }}</td>
-            <td class="text-truncate" style="max-width: 240px;">
-              {{ e.title }}
-            </td>
-            <td>
-              {% if e.mood %}
-                <span class="badge bg-secondary-subtle text-dark">
-                  {{ e.mood }}/10
-                </span>
-              {% else %}
-                <span class="text-muted small">-</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if e.emotions %}
-                {% for emo in e.emotions %}
-                  <span class="badge bg-primary-subtle text-primary me-1 mb-1">{{ emo }}</span>
-                {% endfor %}
-              {% else %}
-                <span class="text-muted small">분석 정보 없음</span>
-              {% endif %}
-            </td>
-            <td>
-              <a href="{% url 'diary:detail' e.id %}" class="btn btn-outline-secondary btn-sm">
-                보기
-              </a>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="d-flex justify-content-between align-items-center mb-3" style="
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e9ecef;
+      margin-bottom: 25px !important;
+  ">
+    <h2 class="h4 mb-0" style="
+        color: #1a1a1a;
+        font-weight: 700;
+        font-size: 1.8rem;
+    ">감정 리포트</h2>
+    <a href="{% url 'diary:create' %}" class="btn btn-primary btn-sm" style="
+        background-color: #1a8a9a;
+        border-color: #1a8a9a;
+        font-weight: 600;
+        padding: 8px 18px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        text-decoration: none;
+        color: white;
+    ">새 일기</a>
   </div>
-{% else %}
-  <p class="text-muted">아직 분석된 일기가 없습니다. 오늘의 일기를 작성해 볼까요?</p>
-{% endif %}
+
+  <p class="text-muted small mb-4" style="
+      font-size: 1rem;
+      color: #6c757d !important;
+      padding-left: 10px;
+      border-left: 4px solid #1a8a9a; /* 강조선 */
+      line-height: 1.5;
+  ">
+    작성한 일기들을 기준으로, 날짜별 기분 점수와 주요 감정들을 한 눈에 볼 수 있어요.
+  </p>
+
+  {% if entries %}
+    <div class="table-responsive" style="
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+    ">
+      <table class="table table-sm align-middle mb-0" style="
+          width: 100%;
+          background-color: #ffffff;
+          border-collapse: collapse;
+      ">
+        <thead class="table-light" style="
+            background-color: #f1f6f8 !important; /* 약간 밝은 배경 */
+        ">
+          <tr>
+            <th scope="col" style="
+                width: 120px;
+                color: #1a1a1a;
+                font-weight: 700;
+                border-top: none;
+                padding: 12px 15px;
+                border-bottom: 2px solid #e9ecef;
+            ">날짜</th>
+            <th scope="col" style="
+                color: #1a1a1a;
+                font-weight: 700;
+                border-top: none;
+                padding: 12px 15px;
+                border-bottom: 2px solid #e9ecef;
+            ">제목</th>
+            <th scope="col" style="
+                width: 120px;
+                color: #1a1a1a;
+                font-weight: 700;
+                border-top: none;
+                text-align: center;
+                padding: 12px 15px;
+                border-bottom: 2px solid #e9ecef;
+            ">기분 점수</th>
+            <th scope="col" style="
+                width: 220px;
+                color: #1a1a1a;
+                font-weight: 700;
+                border-top: none;
+                padding: 12px 15px;
+                border-bottom: 2px solid #e9ecef;
+            ">주요 감정</th>
+            <th scope="col" style="
+                width: 80px;
+                color: #1a1a1a;
+                font-weight: 700;
+                border-top: none;
+                padding: 12px 15px;
+                border-bottom: 2px solid #e9ecef;
+            "></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for e in entries %}
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="
+                  font-size: 0.95rem;
+                  color: #555;
+                  padding: 12px 15px;
+              ">{{ e.date|date:"Y-m-d" }}</td>
+              <td class="text-truncate" style="
+                  max-width: 240px;
+                  font-weight: 600;
+                  color: #1a8a9a;
+                  padding: 12px 15px;
+              ">
+                {{ e.title }}
+              </td>
+              <td style="text-align: center; padding: 12px 15px;">
+                {% if e.mood %}
+                  <span class="badge" style="
+                      background-color: #e9ecef;
+                      color: #1a1a1a;
+                      font-size: 0.9rem;
+                      padding: 6px 10px;
+                      border-radius: 15px;
+                      display: inline-block;
+                  ">
+                    {{ e.mood }}/10
+                  </span>
+                {% else %}
+                  <span class="text-muted small" style="font-size: 0.85rem; color: #adb5bd !important;">-</span>
+                {% endif %}
+              </td>
+              <td style="padding: 12px 15px;">
+                {% if e.emotions %}
+                  {% for emo in e.emotions %}
+                    <span class="badge me-1 mb-1" style="
+                        background-color: #DCE1BB; /* 연한 강조색 배경 */
+                        color: #586211; /* 강조색 텍스트 */
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        border-radius: 12px;
+                        padding: 5px 10px;
+                        display: inline-block;
+                    ">{{ emo }}</span>
+                  {% endfor %}
+                {% else %}
+                  <span class="text-muted small" style="font-size: 0.85rem; color: #adb5bd !important;">분석 정보 없음</span>
+                {% endif %}
+              </td>
+              <td style="padding: 12px 15px;">
+                <a href="{% url 'diary:detail' e.id %}" class="btn btn-outline-secondary btn-sm" style="
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    padding: 5px 10px;
+                    border: 1px solid #1a8a9a;
+                    color: #1a8a9a;
+                    text-decoration: none;
+                    background-color: transparent;
+                ">
+                  보기
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="
+      padding: 50px;
+      border: 2px dashed #ced4da;
+      border-radius: 10px;
+      text-align: center;
+      background-color: #f8f9fa;
+      margin-top: 30px;
+    ">
+      <p class="text-muted" style="
+          font-size: 1.1rem;
+          color: #6c757d !important;
+          margin-bottom: 0;
+      ">아직 분석된 일기가 없습니다. 오늘의 일기를 작성해 볼까요?</p>
+    </div>
+  {% endif %}
+</div>
 {% endblock %}

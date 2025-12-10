@@ -20,20 +20,40 @@
                     border-bottom: 2px solid #e9ecef;
                     padding-bottom: 10px;
                 ">오늘의 감정 리포트</h2>
-                {% if object.summary or object.suggestions or object.emotion_vector.main_emotions %}
-                {% if object.summary %}
-                <div class="mb-3">
-                    <div class="small text-muted mb-1" style="font-weight: 600; color: #6c757d !important;">요약</div>
-                    <p class="mb-0" style="white-space: pre-wrap; font-size: 0.95rem; color: #343a40;">{{ object.summary }}</p>
+                <div id="analysis-empty-block"
+                     {% if object.summary or object.suggestions or object.emotion_vector.main_emotions %}
+                     style="display:none;"
+                     {% endif %}>
+                    <p class="text-muted small mb-0" style="font-size: 0.9rem;">
+                        아직 이 일기에 대한 분석 정보가 없습니다. 분석이 완료되면 자동으로 표시됩니다.
+                    </p>
                 </div>
-                {% endif %}
 
-                {% with emotions=object.emotion_vector.main_emotions %}
-                {% if emotions %}
-                <div class="mb-3">
-                    <div class="small text-muted mb-1" style="font-weight: 600; color: #6c757d !important;">두드러지는 감정</div>
-                    {% for emo in emotions %}
-                    <span class="badge me-1 mb-1" style="
+                <div id="analysis-main-block"
+                     {% if not object.summary and not object.suggestions and not object.emotion_vector.main_emotions %}
+                     style="display:none;"
+                     {% endif %}>
+                    {% if object.summary %}
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1" style="font-weight: 600; color: #6c757d !important;">요약</div>
+                        <p id="analysis-summary" class="mb-0"
+                           style="white-space: pre-wrap; font-size: 0.95rem; color: #343a40;">{{ object.summary }}</p>
+                    </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1" style="font-weight: 600; color: #6c757d !important;">요약</div>
+                        <p id="analysis-summary" class="mb-0"
+                           style="white-space: pre-wrap; font-size: 0.95rem; color: #343a40;"></p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1" style="font-weight: 600; color: #6c757d !important;">두드러지는 감정</div>
+                        <div id="analysis-emotions">
+                            {% with emotions=object.emotion_vector.main_emotions %}
+                                {% if emotions %}
+                                    {% for emo in emotions %}
+                                        <span class="badge me-1 mb-1" style="
                         background-color: #DCE1BB;
                         color: #586211;
                         font-size: 0.85rem;
@@ -41,40 +61,41 @@
                         border-radius: 12px;
                         padding: 5px 10px;
                     ">{{ emo }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                {% endwith %}
+                                    {% endfor %}
+                                {% else %}
+                                    <span class="text-muted small">분석 정보 없음</span>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
 
-                <div class="mb-3">
-                    <div class="small text-muted mb-1" style="font-weight: 600; color: #6c757d !important;">자기 평가 기분 점수</div>
-                    {% if object.mood_self_report %}
-                    <span class="badge" style="
+                    <div class="mb-3">
+                        <div class="small text-muted mb-1" style="font-weight: 600; color: #6c757d !important;">자기 평가 기분
+                            점수
+                        </div>
+                        <span id="analysis-mood">
+                            {% if object.mood_self_report %}
+                                <span class="badge" style="
                         background-color: #e9ecef;
                         color: #1a1a1a;
                         font-size: 0.9rem;
                         padding: 6px 10px;
                         border-radius: 15px;
                     ">
-                        {{ object.mood_self_report }}/10
-                    </span>
-                    {% else %}
-                    <span class="text-muted small" style="font-size: 0.85rem;">입력된 점수가 없습니다.</span>
-                    {% endif %}
-                </div>
+                                {{ object.mood_self_report }}/10
+                                </span>
+                            {% else %}
+                                <span class="text-muted small" style="font-size: 0.85rem;">입력된 점수가 없습니다.</span>
+                            {% endif %}
+                        </span>
+                    </div>
 
-                {% if object.suggestions %}
-                <div class="mt-3 p-3 rounded" style="background-color: #e9ecef; border: 1px dashed #ced4da;">
-                    <div class="small text-muted mb-1" style="font-weight: 600; color: #1a8a9a !important;">오늘을 위한 작은 제안</div>
-                    <p class="mb-0" style="white-space: pre-wrap; font-size: 0.95rem; color: #343a40;">{{ object.suggestions }}</p>
+                    <div class="mt-3 p-3 rounded" style="background-color: #e9ecef; border: 1px dashed #ced4da;">
+                        <div class="small text-muted mb-1" style="font-weight: 600; color: #1a8a9a !important;">오늘을 위한 작은 제안</div>
+                        <p id="analysis-suggestions" class="mb-0"
+                           style="white-space: pre-wrap; font-size: 0.95rem; color: #343a40;">{{ object.suggestions }}</p>
+                    </div>
                 </div>
-                {% endif %}
-
-                {% else %}
-                <p class="text-muted small mb-0" style="font-size: 0.9rem;">
-                    아직 이 일기에 대한 분석 정보가 없습니다. 새로 일기를 저장하거나, 분석 기능을 다시 실행해 주세요.
-                </p>
-                {% endif %}
             </div>
         </div>
 
@@ -186,13 +207,13 @@
                     padding: 15px !important;
                     font-size: 0.95rem;
                     ">
-                    </div>
+                </div>
 
                 {{ turns|json_script:"initial-turns-data" }}
                 <script id="turn-info" type="application/json">
                     {
-                        "max_turns": {{max_turns}},
-                        "turns_used": {{turns_used}}
+                        "max_turns": {{ max_turns }},
+                        "turns_used": {{ turns_used }}
                     }
                 </script>
 
@@ -212,7 +233,8 @@
                         border-radius: 20px;
                         padding: 10px 15px;
                         white-space: nowrap;
-                    ">보내기</button>
+                    ">보내기
+                    </button>
                 </form>
 
 
@@ -239,7 +261,8 @@
                     font-size: 0.65rem;
                     color: #6C7278;
                     text-align: right;
-                ">* Aiary 챗봇은 전문 상담사를 대체할 수 없습니다. (gpt-4.1-mini)</div>
+                ">* Aiary 챗봇은 전문 상담사를 대체할 수 없습니다. (gpt-4.1-mini)
+                </div>
             </div>
         </div>
     </div>
@@ -257,6 +280,12 @@
       const upgradeWrapper = document.getElementById("upgradeWrapper");
       const upgradeBtn = document.getElementById("upgradeBtn");
       const turnsRemainingSpan = document.getElementById("turnsRemaining");
+      const analysisEmpty = document.getElementById("analysis-empty-block");
+      const analysisMain = document.getElementById("analysis-main-block");
+      const summaryEl = document.getElementById("analysis-summary");
+      const emotionsEl = document.getElementById("analysis-emotions");
+      const moodEl = document.getElementById("analysis-mood");
+      const suggestionsEl = document.getElementById("analysis-suggestions");
 
       const initialTurns = JSON.parse(
         document.getElementById("initial-turns-data").textContent
@@ -300,6 +329,67 @@
         chatLog.scrollTop = chatLog.scrollHeight;
       }
 
+      // 감정분석카드 업데이트
+      function updateAnalysisCard(analysis) {
+    if (!analysis) return;
+
+    const { summary, suggestions, emotions, mood } = analysis;
+
+    // 아무 정보도 없으면 비워두기
+    const hasAny =
+      (summary && summary.trim() !== "") ||
+      (suggestions && suggestions.trim() !== "") ||
+      (Array.isArray(emotions) && emotions.length > 0);
+
+    if (!hasAny) {
+      if (analysisMain) analysisMain.style.display = "none";
+      if (analysisEmpty) analysisEmpty.style.display = "block";
+      return;
+    }
+
+    if (analysisEmpty) analysisEmpty.style.display = "none";
+    if (analysisMain) analysisMain.style.display = "block";
+
+    if (summaryEl) {
+      summaryEl.textContent = summary || "";
+      summaryEl.parentElement.style.display = summary ? "block" : "none";
+    }
+
+    if (emotionsEl) {
+      emotionsEl.innerHTML = "";
+      if (Array.isArray(emotions) && emotions.length > 0) {
+        emotions.forEach(e => {
+          const span = document.createElement("span");
+          span.className = "badge me-1 mb-1";
+          span.style = "background-color: #DCE1BB;color: #586211;font-size: 0.85rem;font-weight: 600;border-radius: 12px;padding: 5px 10px;";
+          span.textContent = e;
+          emotionsEl.appendChild(span);
+        });
+      } else {
+        const span = document.createElement("span");
+        span.className = "text-muted small";
+        span.textContent = "분석 정보 없음";
+        emotionsEl.appendChild(span);
+      }
+    }
+
+    if (moodEl) {
+      if (mood != null) {
+        moodEl.innerHTML =
+          '<span class="badge" style="background-color: #e9ecef;color: #1a1a1a;font-size: 0.9rem;padding: 6px 10px;border-radius: 15px;">' +
+          mood +
+          "/10</span>";
+      } else {
+        moodEl.innerHTML =
+          '<span class="text-muted small" style="font-size: 0.85rem;">입력된 점수가 없습니다.</span>';
+      }
+    }
+
+    if (suggestionsEl) {
+      suggestionsEl.textContent = suggestions || "";
+    }
+  }
+
       // 최초 응답 폴링
       function startPollingForFirstReply(){
         if (pollingTimer) return;
@@ -316,12 +406,16 @@
             .then(resp => resp.json())
             .then(data => {
                 const turns = data.turns || [];
+                const analysis = data.analysis || null;
+
+                updateAnalysisCard(analysis);
+
                 if (turns.length === 0) {
                     // 아직 분석 안 끝남
                     return;
                 }
 
-                // ✅ 턴이 생겼으면 기존 로그 비우고 다시 그림
+                // 턴이 생겼으면 기존 로그 비우고 다시 그림
                 chatLog.innerHTML = "";
                 turns.forEach(t => appendBubble(t.sender, t.message));
 

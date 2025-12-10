@@ -77,7 +77,20 @@ def chat_history(request):
     turns = list(
         session.turns.values("sender", "message", "created_at").order_by("created_at")
     )
-    return JsonResponse({"turns": turns})
+
+    entry = session.entry
+    emotions = []
+    if isinstance(entry.emotion_vector, dict):
+        emotions = entry.emotion_vector.get("main_emotions", []) or []
+
+    analysis = {
+        "summary": entry.summary or "",
+        "suggestions": entry.suggestions or "",
+        "emotions": emotions,
+        "mood": entry.mood_self_report,
+    }
+
+    return JsonResponse({"turns": turns, "analysis": analysis})
 
 
 @login_required

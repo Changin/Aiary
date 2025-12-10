@@ -5,7 +5,8 @@ from django.views.generic import ListView, CreateView, DetailView, DeleteView, T
 from django.shortcuts import redirect
 from .models import DiaryEntry, CounselingSession, ChatTurn
 from .forms import DiaryEntryForm
-from .services import bootstrap_counseling  # 첫 응답 생성 함수
+# from .services import bootstrap_counseling  # 첫 응답 생성 함수
+from .tasks import bootstrap_counseling_task    # 비동기 첫 응답 생성 함수
 
 
 class EntryListView(LoginRequiredMixin, ListView):
@@ -32,11 +33,11 @@ class EntryCreateView(LoginRequiredMixin, CreateView):
         )
 
         # 일기 저장 직후 GPT 호출 + 첫 상담 메시지 생성
-        # (프로토타입이라 동기 호출. 나중에 Celery로 비동기 처리 가능)
+        # Celery로 비동기 호출 (큐에 작업 적재)
         try:
             # 턴이 없다면(중복 호출 방지), 부트스트랩 함수 수행 (최초 메세지 턴 생성)
             if not session.turns.exists():
-                bootstrap_counseling(self.object, session)
+                bootstrap_counseling_task.delay(self.object.pk, session.pk)
         except Exception:
             # 오류가 나더라도 일기 저장 자체는 계속 진행
             pass

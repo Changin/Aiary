@@ -62,12 +62,7 @@ def chat_send(request):
     messages = []
 
     # 시스템 프롬프트
-    system_prompt = (
-        "너는 한국어 심리상담 보조자이다. 공감적이고 비판단적이며, "
-        "간단한 조언과 정서적 지지를 제공한다. 사용자의 감정을 인정하고, "
-        "명령조 대신 제안형 어투를 사용해라. 자/타해 위험이 의심되면 "
-        "전문기관 상담 또는 긴급 도움을 받으라는 안내를 포함해라."
-    )
+    system_prompt = settings.COUNSELING_DIALOG_SYSTEM_PROMPT
     messages.append({"role": "system", "content": system_prompt})
 
     # 일기 요약 컨텍스트
@@ -96,6 +91,7 @@ def chat_send(request):
     except Exception as e:
         # 에러 시 기본 메시지
         reply = "현재 상담 서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
+        user_turn_count -= 1
 
     # 어시스턴트 턴 저장
     ChatTurn.objects.create(session=session, sender="assistant", message=reply)

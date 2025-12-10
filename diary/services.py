@@ -6,7 +6,7 @@ from openai import OpenAI
 from .models import DiaryEntry, CounselingSession, ChatTurn
 
 client = OpenAI(api_key=settings.SECRETS.get("OPENAI_API_KEY"))
-MODEL_NAME = settings.SECRETS.get("OPENAI_MODEL", "gpt-4.1-mini")
+MODEL_NAME = settings.OPENAI_MODEL
 
 
 def bootstrap_counseling(entry: DiaryEntry, session: CounselingSession):
@@ -21,24 +21,7 @@ def bootstrap_counseling(entry: DiaryEntry, session: CounselingSession):
     mood = entry.mood_self_report
     date_str = entry.entry_date.strftime("%Y-%m-%d") if entry.entry_date else ""
 
-    system_prompt = (
-        "너는 한국어 심리상담 보조자이다. 공감적이고 비판단적이며, "
-        "일기에 대한 짧은 요약과 정서 분석, 그리고 일기 내용을 기반으로 자기 성찰을 도와주는 질문을 3개 제공한다. "
-        "반말보다는 편안한 존댓말/반존댓말 사이 느낌으로, 부드럽고 따뜻하게 말해라. "
-        "자/타해 위험이 강하게 느껴지면 전문 도움을 언급하되 과도하게 자극적 표현은 피한다.\n\n"
-        "반드시 JSON 형식으로만 답하라. 추가 텍스트나 설명은 넣지 마라.\n"
-        "형식 예시는 다음과 같다:\n"
-        "{\n"
-        '  \"summary\": \"... 일기 핵심 요약 ...\",\n'
-        '  \"main_emotions\": [\"불안\", \"피로\"],\n'
-        '  \"advice\": \"... 오늘에 대한 공감 + 조언 ...\",\n'
-        '  \"reflection_questions\": [\n'
-        '    \"질문1\",\n'
-        '    \"질문2\",\n'
-        '    \"질문3\"\n'
-        "  ]\n"
-        "}\n"
-    )
+    system_prompt = settings.COUNSELING_ANALYSIS_SYSTEM_PROMPT
 
     user_content = f"일기 날짜: {date_str}\n"
     if mood is not None:

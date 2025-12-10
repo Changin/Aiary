@@ -155,3 +155,15 @@ LOGOUT_REDIRECT_URL = "web:home"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 OPENAI_MODEL = get_secret("OPENAI_MODEL", "gpt-4.1-mini")
+
+# 상담 프롬프트
+COUNSELING_DIALOG_SYSTEM_PROMPT = get_secret(
+    "COUNSELING_DIALOG_SYSTEM_PROMPT",
+    default="너는 한국어로 대화하는 감정 지원 보조자이다."
+)
+
+# 일기 분석 프롬프트
+COUNSELING_ANALYSIS_SYSTEM_PROMPT = get_secret(
+    "COUNSELING_ANALYSIS_SYSTEM_PROMPT",
+    default="너는 사용자의 일기를 분석해 요약과 감정 정리를 도와주는 보조자이다."
+)

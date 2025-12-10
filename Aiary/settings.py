@@ -167,3 +167,8 @@ COUNSELING_ANALYSIS_SYSTEM_PROMPT = get_secret(
     "COUNSELING_ANALYSIS_SYSTEM_PROMPT",
     default="너는 사용자의 일기를 분석해 요약과 감정 정리를 도와주는 보조자이다."
 )
+
+
+# OCR 모델 경로
+OCR_MODEL_DIR = get_secret("OCR_MODEL_DIR", "./aiary_model_11_26_v3")
+

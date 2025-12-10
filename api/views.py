@@ -1,17 +1,50 @@
 # api/views.py
-import json
+import json, os
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from diary.models import CounselingSession, ChatTurn, DiaryEntry
+from ocr.tasks import run_ocr_task
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 from openai import OpenAI
+
 
 client = OpenAI(api_key=settings.SECRETS.get("OPENAI_API_KEY", None))
 MODEL_NAME = settings.SECRETS.get("OPENAI_MODEL", "gpt-4.1-mini")
 
 MAX_TURNS_PER_SESSION = 5
+
+
+@login_required
+@require_POST
+def ocr_recognize(request):
+    image = request.FILES.get("image")
+    if not image:
+        return HttpResponseBadRequest("no image")
+
+    # 1) 파일 저장 (MEDIA_ROOT/diary_ocr/...)
+    filename = default_storage.save(
+        os.path.join("diary_ocr", image.name),
+        ContentFile(image.read())
+    )
+    image_path = os.path.join(settings.MEDIA_ROOT, filename)
+
+    try:
+        # 2) Celery 태스크 호출 (데모에선 .get()으로 동기 대기)
+        result = run_ocr_task.delay(image_path)
+        text = result.get(timeout=30) or ""
+    except Exception:
+        return JsonResponse(
+            {"error": "ocr_fail", "message": "OCR 분석 중 오류가 발생했습니다."},
+            status=500,
+        )
+
+    # 3) 사용한 이미지 파일 삭제
+
+    return JsonResponse({"text": text})
 
 
 @login_required

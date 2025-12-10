@@ -15,6 +15,7 @@ class DiaryEntry(models.Model):
     entry_date = models.DateField(default=timezone.localdate)
     title = models.CharField(max_length=120, blank=True)    # 타이틀
     content = models.TextField()   # 프로토타입: 원문 평문 저장
+    contents_predicted = models.TextField(blank=True)   # OCR 모델이 처음 뽑은 원본 텍스트 (사용자 수정 전)
     mood_self_report = models.IntegerField(null=True, blank=True)  # 기분 1~10
     created_at = models.DateTimeField(auto_now_add=True)    # 생성 날짜
 
@@ -24,6 +25,7 @@ class DiaryEntry(models.Model):
     topics = models.JSONField(default=list, blank=True)               # ["학업","관계"]
     summary = models.TextField(blank=True)                            # 짧은 요약
     suggestions = models.TextField(blank=True)                        # 행동/조언
+
 
     def __str__(self):
         return f"[{self.created_at:%Y-%m-%d}] {self.title or 'Untitled'}"

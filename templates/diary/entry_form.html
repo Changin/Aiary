@@ -21,7 +21,7 @@
                         padding-bottom: 10px;
                         margin-bottom: 25px !important;
                     ">오늘의 일기</h2>
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="date" class="form-label"
@@ -34,13 +34,8 @@
                         {{ form.title }}
                     </div>
                     <div class="mb-3">
-                        <label for="{{ form.content.id_for_label }}" class="form-label"
-                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.content.label_tag }}</label>
-                        {{ form.content }}
-                    </div>
-                    <div class="mb-3">
                         <label for="id_image" class="form-label"
-                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">사진 첨부 (선택)</label>
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">손글씨 일기 사진 (선택)</label>
                         <input type="file" name="image" id="id_image" accept="image/*"
                                class="form-control"
                                style="
@@ -48,11 +43,20 @@
                                     padding: 10px 15px;
                                     font-size: 1rem;
                                     border: 1px solid #a7aaae;
-                                    /* 💡 배경색을 카드 배경색과 동일하게 설정 또는 투명 처리 */
                                     background-color: #fafaf8;
                                     /* 파일 선택 버튼 자체는 브라우저가 그리므로, 이 배경색은 입력 영역 전체에 적용됨 */
                                 ">
+                        <div class="form-text">
+                            사진을 선택하면 자동으로 텍스트를 인식해서 아래 일기 내용에 채워줘요.
+                        </div>
                     </div>
+                    <div class="mb-3">
+                        <label for="{{ form.content.id_for_label }}" class="form-label"
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.content.label_tag }}</label>
+                        {{ form.content }}
+                    </div>
+                    <!-- 모델 최초 예측값 저장 숨김 필드 -->
+                    {{ form.contents_predicted }}
                     <div class="mb-3">
                         <label for="mood" class="form-label"
                                style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.mood_self_report.label_tag }}</label>
@@ -115,4 +119,69 @@
         </div>
     </div>
 </div>
+<script>
+(function(){
+  const imageInput = document.getElementById("id_image");
+  const contentArea = document.getElementById("content");  // Django가 자동 부여하는 id
+  const predictedInput = document.getElementById("id_contents_predicted"); // hidden field
+  const csrfTokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+
+  if (!imageInput || !contentArea || !csrfTokenInput) {
+    console.log("error");
+    // console.log(imageInput);
+    // console.log(contentArea);
+    return;
+  }
+
+  const originalPlaceholder = contentArea.placeholder || "";
+  let lastUserText = contentArea.value;  // 실패 시 복원용
+
+  imageInput.addEventListener("change", function(){
+    const file = imageInput.files[0];
+    if (!file) return;
+
+    // 기존 내용 백업
+    lastUserText = contentArea.value;
+
+    // UI: 분석중 표시 + 입력 잠금
+    contentArea.value = "";
+    contentArea.placeholder = "분석중입니다...";
+    contentArea.disabled = true;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    fetch("{% url 'api:ocr_ocr_recognize' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": csrfTokenInput.value
+      },
+      body: formData
+    })
+    .then(resp => resp.json())
+    .then(data => {
+      if (data.error) {
+        alert(data.message || "OCR 분석 중 오류가 발생했습니다.");
+        contentArea.value = lastUserText;
+        return;
+      }
+      const text = data.text || "";
+      contentArea.value = text;
+      if (predictedInput) {
+        predictedInput.value = text;  // ✅ 최초 예측값 저장
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("네트워크 오류로 인해 OCR 분석에 실패했습니다.");
+      contentArea.value = lastUserText;
+    })
+    .finally(() => {
+      contentArea.disabled = false;
+      contentArea.placeholder = originalPlaceholder;
+      contentArea.focus();
+    });
+  });
+})();
+</script>
 {% endblock %}

@@ -9,7 +9,7 @@ from ocr.tasks import run_ocr_task
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from celery.result import AsyncResult
-from Aiary.celery impoort app as celery_app
+from Aiary.celery import app as celery_app
 
 from openai import OpenAI
 
@@ -61,6 +61,23 @@ def ocr_result(request):
         }, status=500)
     else:
         return JsonResponse({"status": result.state})
+
+
+@login_required
+def chat_history(request):
+    session_id = request.GET.get("session_id")
+    if not session_id:
+        return HttpResponseBadRequest("no session id")
+
+    try:
+        session = CounselingSession.objects.get(pk=session_id, user=request.user)
+    except CounselingSession.DoesNotExist:
+        return HttpResponseBadRequest("invalid session")
+
+    turns = list(
+        session.turns.values("sender", "message", "created_at").order_by("created_at")
+    )
+    return JsonResponse({"turns": turns})
 
 
 @login_required

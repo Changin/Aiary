@@ -269,6 +269,7 @@
       let isLoading = false;
       let maxTurns = turnInfo.max_turns;
       let turnsUsed = turnInfo.turns_used;
+      let pollingTimer = null;
 
 
       function appendBubble(sender, text){
@@ -299,6 +300,44 @@
         chatLog.scrollTop = chatLog.scrollHeight;
       }
 
+      // 최초 응답 폴링
+      function startPollingForFirstReply(){
+        if (pollingTimer) return;
+
+        chatStatus.textContent = "일기 분석 중입니다. 잠시만 기다려 주세요...";
+
+        pollingTimer = setInterval(function(){
+            fetch("{% url 'api:chat_history' %}?session_id=" + encodeURIComponent(sessionId), {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(resp => resp.json())
+            .then(data => {
+                const turns = data.turns || [];
+                if (turns.length === 0) {
+                    // 아직 분석 안 끝남
+                    return;
+                }
+
+                // ✅ 턴이 생겼으면 기존 로그 비우고 다시 그림
+                chatLog.innerHTML = "";
+                turns.forEach(t => appendBubble(t.sender, t.message));
+
+                clearInterval(pollingTimer);
+                pollingTimer = null;
+                chatStatus.textContent = "";
+            })
+            .catch(err => {
+                console.error(err);
+                clearInterval(pollingTimer);
+                pollingTimer = null;
+                chatStatus.textContent = "분석 상태를 가져오는 중 오류가 발생했습니다.";
+            });
+          }, 4000); // 4초마다 체크
+      }
+
       // 로딩 상태 토글
       function setLoading(loading) {
         isLoading = loading;
@@ -312,7 +351,7 @@
         }
       }
 
-      // ✅ 턴 정보 UI 업데이트
+      // 턴 정보 UI 업데이트
       function updateTurnUI() {
         const remaining = Math.max(0, maxTurns - turnsUsed);
         if (turnsRemainingSpan) {
@@ -333,8 +372,8 @@
       if (Array.isArray(initialTurns) && initialTurns.length > 0) {
         initialTurns.forEach(t => appendBubble(t.sender, t.message));
       } else {
-        // 세션이 비어있을 때 안내 문구를 넣을 수도 있음
-        // appendBubble("assistant", "오늘 일기를 들려주면, 여기에서 함께 이야기해볼 수 있어요.");
+        appendBubble("assistant", "일기 내용을 분석하고 있어요. 잠시만 기다려 주세요...");
+        startPollingForFirstReply();
       }
 
       // 초기 턴 상태 반영

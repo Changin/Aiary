@@ -35,7 +35,7 @@ def ocr_recognize(request):
     try:
         # 2) Celery 태스크 호출 (데모에선 .get()으로 동기 대기)
         result = run_ocr_task.delay(image_path)
-        text = result.get(timeout=30) or ""
+        text = result.get(timeout=300) or ""
     except Exception:
         return JsonResponse(
             {"error": "ocr_fail", "message": "OCR 분석 중 오류가 발생했습니다."},

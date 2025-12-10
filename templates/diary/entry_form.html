@@ -47,7 +47,8 @@
                                     /* 파일 선택 버튼 자체는 브라우저가 그리므로, 이 배경색은 입력 영역 전체에 적용됨 */
                                 ">
                         <div class="form-text">
-                            사진을 선택하면 자동으로 텍스트를 인식해서 아래 일기 내용에 채워줘요.
+                            사진을 선택하면 자동으로 텍스트를 인식해서 아래 일기 내용에 채워줘요. (글씨체에 따라 인식률이 낮아질 수 있습니다.)<br>
+                            글씨에 따라서 인식을 못하는 경우 "__" 로 수정해야할 부분이 표시됩니다.
                         </div>
                     </div>
                     <div class="mb-3">
@@ -145,7 +146,7 @@
 
     // UI: 분석중 표시 + 입력 잠금
     contentArea.value = "";
-    contentArea.placeholder = "분석중입니다...";
+    contentArea.placeholder = "분석중입니다...\n작업은 최대 3분 정도 소요될 수 있습니다.";
     contentArea.disabled = true;
 
     const formData = new FormData();

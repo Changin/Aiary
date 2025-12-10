@@ -8,6 +8,8 @@ from diary.models import CounselingSession, ChatTurn, DiaryEntry
 from ocr.tasks import run_ocr_task
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from celery.result import AsyncResult
+from Aiary.celery impoort app as celery_app
 
 from openai import OpenAI
 
@@ -20,7 +22,7 @@ MAX_TURNS_PER_SESSION = 5
 
 @login_required
 @require_POST
-def ocr_recognize(request):
+def ocr_start(request):
     image = request.FILES.get("image")
     if not image:
         return HttpResponseBadRequest("no image")
@@ -32,19 +34,33 @@ def ocr_recognize(request):
     )
     image_path = os.path.join(settings.MEDIA_ROOT, filename)
 
-    try:
-        # 2) Celery 태스크 호출 (데모에선 .get()으로 동기 대기)
-        result = run_ocr_task.delay(image_path)
-        text = result.get(timeout=300) or ""
-    except Exception:
-        return JsonResponse(
-            {"error": "ocr_fail", "message": "OCR 분석 중 오류가 발생했습니다."},
-            status=500,
-        )
+    # Celery Task 실행하고 곧바로 task_id 반환
+    async_result = run_ocr_task(image_path)
+    return JsonResponse({"task_id": async_result})
 
-    # 3) 사용한 이미지 파일 삭제
 
-    return JsonResponse({"text": text})
+@login_required
+def ocr_result(request):
+    task_id = request.GET.get("task_id")
+    if not task_id:
+        return HttpResponseBadRequest("no task id")
+
+    result = AsyncResult(task_id, app=celery_app)
+
+    if result.state in ("PENDING", "STARTED"):
+        return JsonResponse({"status": "pending"})
+    elif result.state == "SUCCESS":
+        return JsonResponse({
+            "status": "success",
+            "text": result.result or "",
+        })
+    elif result.state in ("FAILURE", "REVOKED"):
+        return JsonResponse({
+            "status": "error",
+            "message": "OCR 처리 중 오류가 발생했습니다."
+        }, status=500)
+    else:
+        return JsonResponse({"status": result.state})
 
 
 @login_required

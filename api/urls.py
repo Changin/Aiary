@@ -7,5 +7,6 @@ app_name = "api"
 
 urlpatterns = [
     path("chat/send/", views.chat_send, name="chat_send"),
-    path("ocr/recognize/", views.ocr_recognize, name="ocr_ocr_recognize")
+    path("ocr/start/", views.ocr_start, name="ocr_start"),
+    path("ocr/result/", views.ocr_result, name="ocr_result"),
 ]

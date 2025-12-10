@@ -135,24 +135,70 @@
   }
 
   const originalPlaceholder = contentArea.placeholder || "";
-  let lastUserText = contentArea.value;  // 실패 시 복원용
+  let lastUserText = contentArea.value;
+  let pollTimer = null;
+
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  function pollOcrResult(taskId) {
+    stopPolling();
+    pollTimer = setInterval(function(){
+      fetch("{% url 'api:ocr_result' %}?task_id=" + encodeURIComponent(taskId), {
+        method: "GET",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if (data.status === "pending") {
+          // 아직 처리 중
+          return;
+        }
+        stopPolling();
+
+        if (data.status === "success") {
+          const text = data.text || "";
+          contentArea.value = text;
+          if (predictedInput) {
+            predictedInput.value = text;
+          }
+        } else {
+          alert(data.message || "OCR 분석 중 오류가 발생했습니다.");
+          contentArea.value = lastUserText;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        stopPolling();
+        alert("네트워크 오류로 인해 OCR 분석에 실패했습니다.");
+        contentArea.value = lastUserText;
+      })
+      .finally(() => {
+        contentArea.disabled = false;
+        contentArea.placeholder = originalPlaceholder;
+      });
+    }, 3000); // 3초마다 폴링
+  }
 
   imageInput.addEventListener("change", function(){
     const file = imageInput.files[0];
     if (!file) return;
 
-    // 기존 내용 백업
     lastUserText = contentArea.value;
-
-    // UI: 분석중 표시 + 입력 잠금
     contentArea.value = "";
-    contentArea.placeholder = "분석중입니다...\n작업은 최대 3분 정도 소요될 수 있습니다.";
+    contentArea.placeholder = "분석중입니다...";
     contentArea.disabled = true;
 
     const formData = new FormData();
     formData.append("image", file);
 
-    fetch("{% url 'api:ocr_ocr_recognize' %}", {
+    fetch("{% url 'api:ocr_start' %}", {
       method: "POST",
       headers: {
         "X-CSRFToken": csrfTokenInput.value
@@ -161,26 +207,18 @@
     })
     .then(resp => resp.json())
     .then(data => {
-      if (data.error) {
-        alert(data.message || "OCR 분석 중 오류가 발생했습니다.");
-        contentArea.value = lastUserText;
-        return;
+      if (!data.task_id) {
+        throw new Error("no task_id");
       }
-      const text = data.text || "";
-      contentArea.value = text;
-      if (predictedInput) {
-        predictedInput.value = text;  // ✅ 최초 예측값 저장
-      }
+      // ✅ task_id 로 결과 폴링 시작
+      pollOcrResult(data.task_id);
     })
     .catch(err => {
       console.error(err);
-      alert("네트워크 오류로 인해 OCR 분석에 실패했습니다.");
-      contentArea.value = lastUserText;
-    })
-    .finally(() => {
       contentArea.disabled = false;
       contentArea.placeholder = originalPlaceholder;
-      contentArea.focus();
+      contentArea.value = lastUserText;
+      alert("OCR 요청 중 오류가 발생했습니다.");
     });
   });
 })();

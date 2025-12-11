@@ -155,6 +155,7 @@ LOGOUT_REDIRECT_URL = "web:home"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 OPENAI_MODEL = get_secret("OPENAI_MODEL", "gpt-4.1-mini")
+OPENAI_API_KEY = get_secret("OPENAI_API_KEY", None)
 
 # 상담 프롬프트
 COUNSELING_DIALOG_SYSTEM_PROMPT = get_secret(

@@ -10,6 +10,8 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from celery.result import AsyncResult
 from Aiary.celery import app as celery_app
+from diary.tasks import chat_reply_task
+from accounts.models import Profile
 
 from openai import OpenAI
 
@@ -90,7 +92,22 @@ def chat_history(request):
         "mood": entry.mood_self_report,
     }
 
-    return JsonResponse({"turns": turns, "analysis": analysis})
+    # 유저별 턴 제한 계산
+    profile = getattr(request.user, "profile", None)
+    default_max = MAX_TURNS_PER_SESSION
+    if profile:
+        per_user_max = profile.get_max_turns(default_max)   # None이면 무제한
+    else:
+        per_user_max = default_max
+
+    user_turn_count = session.turns.filter(sender="user").count()
+
+    return JsonResponse({
+        "turns": turns,
+        "analysis": analysis,
+        "max_turns": per_user_max,  # 5 or None
+        "turns_used": user_turn_count,
+    })
 
 
 @login_required
@@ -113,74 +130,37 @@ def chat_send(request):
     except CounselingSession.DoesNotExist:
         return HttpResponseBadRequest("invalid session")
 
-    # user 턴 개수 제한 체크
+    # 유저 속성 가져오기 (유료인지 무료유저인지)
+    user = request.user
+    profile = getattr(user, "profile", None)  # Profile 모델
+    if profile:
+        per_user_max = profile.get_max_turns(MAX_TURNS_PER_SESSION)
+    else:
+        per_user_max = MAX_TURNS_PER_SESSION
+
+    # 턴 제한 체크
     user_turn_count = session.turns.filter(sender="user").count()
-    if user_turn_count >= MAX_TURNS_PER_SESSION:
+    if per_user_max is not None and user_turn_count >= per_user_max:
         return JsonResponse(
             {
                 "error": "turn_limit_reached",
-                "max_turns": MAX_TURNS_PER_SESSION,
+                "max_turns": per_user_max,
                 "turns_used": user_turn_count,
-                "message": "이번 상담 세션의 무료 메시지 5개를 모두 사용했습니다.",
+                "message": "이번 상담 세션의 무료 메시지 한도를 모두 사용했습니다.",
             }
         )
 
     # 사용자 턴 저장
-    user_turn = ChatTurn.objects.create(session=session, sender="user", message=message)
+    ChatTurn.objects.create(session=session, sender="user", message=message)
 
-    # 현재 일기 내용 가져오기 (컨텍스트에 활용)
-    entry: DiaryEntry = session.entry
+    # GPT 답변은 Celery에게 맡김
+    chat_reply_task.delay(session.pk)
 
-    # ---- OpenAI GPT 호출 ----
-    # 대화 히스토리(최근 n턴만) 구성
-    n = 8
-    recent_turns = list(
-        session.turns.order_by("-created_at")[:n]
-    )[::-1]  # 최신 n턴까지, 시간순으로 재정렬
+    # 프론트는 여기서 바로 OK 받고 폴링 시작
+    user_turn_count += 1
+    return JsonResponse({
+        "status": "queued",
+        "max_turns": MAX_TURNS_PER_SESSION,
+        "turns_used": user_turn_count,
+    })
 
-    messages = []
-
-    # 시스템 프롬프트
-    system_prompt = settings.COUNSELING_DIALOG_SYSTEM_PROMPT
-    messages.append({"role": "system", "content": system_prompt})
-
-    # 일기 요약 컨텍스트
-    if entry:
-        context_text = f"사용자의 오늘 일기 요약 컨텍스트:\n제목: {entry.title}\n내용: {entry.content}\n"
-        if entry.mood_self_report is not None:
-            context_text += f"자기 평가 기분 점수(1~10): {entry.mood_self_report}\n"
-        messages.append({"role": "system", "content": context_text})
-
-    # 과거 턴들을 messages에 쌓기
-    for t in recent_turns:
-        role = "assistant" if t.sender == "assistant" else "user"
-        messages.append({"role": role, "content": t.message})
-
-    # 마지막에 방금 질문 추가
-    messages.append({"role": "user", "content": message})
-
-    try:
-        completion = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=messages,
-            temperature=0.6,
-            max_tokens=400,
-        )
-        reply = completion.choices[0].message.content.strip()
-    except Exception as e:
-        # 에러 시 기본 메시지
-        reply = "현재 상담 서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요."
-        user_turn_count -= 1
-
-    # 어시스턴트 턴 저장
-    ChatTurn.objects.create(session=session, sender="assistant", message=reply)
-
-    # 응답에 남은 턴 수 넣어주기
-    turns_used_after = user_turn_count + 1
-    return JsonResponse(
-        {
-            "reply": reply,
-            "max_turns": MAX_TURNS_PER_SESSION,
-            "turns_used": turns_used_after,
-        }
-    )

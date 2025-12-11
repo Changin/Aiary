@@ -212,8 +212,8 @@
                 {{ turns|json_script:"initial-turns-data" }}
                 <script id="turn-info" type="application/json">
                     {
-                        "max_turns": {{ max_turns }},
-                        "turns_used": {{ turns_used }}
+                        "max_turns": {{ max_turns|default:"null" }},
+                        "turns_used": {{ turns_used|default:"0" }}
                     }
                 </script>
 
@@ -269,39 +269,46 @@
 </div>
 
 <script>
-    (function(){
-      const card = document.getElementById("chatCard");
-      const sessionId = card.dataset.sessionId;
-      const chatLog = document.getElementById("chatLog");
-      const chatForm = document.getElementById("chatForm");
-      const chatInput = document.getElementById("chatInput");
-      const chatSendBtn = document.getElementById("chatSendBtn");
-      const chatStatus = document.getElementById("chatStatus");
-      const upgradeWrapper = document.getElementById("upgradeWrapper");
-      const upgradeBtn = document.getElementById("upgradeBtn");
-      const turnsRemainingSpan = document.getElementById("turnsRemaining");
-      const analysisEmpty = document.getElementById("analysis-empty-block");
-      const analysisMain = document.getElementById("analysis-main-block");
-      const summaryEl = document.getElementById("analysis-summary");
-      const emotionsEl = document.getElementById("analysis-emotions");
-      const moodEl = document.getElementById("analysis-mood");
-      const suggestionsEl = document.getElementById("analysis-suggestions");
+(function() {
+    const card = document.getElementById("chatCard");
+    const sessionId = card.dataset.sessionId;
+    const chatLog = document.getElementById("chatLog");
+    const chatForm = document.getElementById("chatForm");
+    const chatInput = document.getElementById("chatInput");
+    const chatSendBtn = document.getElementById("chatSendBtn");
+    const chatStatus = document.getElementById("chatStatus");
+    const upgradeWrapper = document.getElementById("upgradeWrapper");
+    const upgradeBtn = document.getElementById("upgradeBtn");
+    const turnsRemainingSpan = document.getElementById("turnsRemaining");
+    const analysisEmpty = document.getElementById("analysis-empty-block");
+    const analysisMain = document.getElementById("analysis-main-block");
+    const summaryEl = document.getElementById("analysis-summary");
+    const emotionsEl = document.getElementById("analysis-emotions");
+    const moodEl = document.getElementById("analysis-mood");
+    const suggestionsEl = document.getElementById("analysis-suggestions");
 
-      const initialTurns = JSON.parse(
+    const initialTurns = JSON.parse(
         document.getElementById("initial-turns-data").textContent
-      );
+    );
 
-      const turnInfo = JSON.parse(
+    const turnInfo = JSON.parse(
         document.getElementById("turn-info").textContent
-      );
+    );
 
-      let isLoading = false;
-      let maxTurns = turnInfo.max_turns;
-      let turnsUsed = turnInfo.turns_used;
-      let pollingTimer = null;
+    let isLoading = false;
+    let maxTurns = turnInfo.max_turns;
+    let turnsUsed = turnInfo.turns_used;
+    let pollingTimer = null;
+    let lastTurnCount = initialTurns.length;
 
 
-      function appendBubble(sender, text){
+    function renderTurns(turns) {
+        chatLog.innerHTML = "";
+        turns.forEach(t => appendBubble(t.sender, t.message));
+        lastTurnCount = turns.length;
+    }
+
+    function appendBubble(sender, text) {
         const wrap = document.createElement("div");
         wrap.className = sender === "user" ? "text-end mb-2" : "text-start mb-2";
         const b = document.createElement("div");
@@ -313,239 +320,268 @@
         b.textContent = text;
 
         if (sender === "user") {
-                        b.style.backgroundColor = "#1a8a9a"; // 사용자: 강조색 배경
-                        b.style.color = "white";
-                        b.style.border = "none";
-                        b.style.borderRadius = "15px 15px 0 15px"; // 우상단, 우하단, 좌하단, 좌상단 순서
+            b.style.backgroundColor = "#1a8a9a"; // 사용자: 강조색 배경
+            b.style.color = "white";
+            b.style.border = "none";
+            b.style.borderRadius = "15px 15px 0 15px"; // 우상단, 우하단, 좌하단, 좌상단 순서
         } else {
-                        b.style.backgroundColor = "#ffffff"; // 챗봇: 흰색 배경
-                        b.style.color = "#333";
-                        b.style.border = "1px solid #ced4da";
-                        b.style.borderRadius = "15px 15px 15px 0"; // 좌상단, 우상단, 우하단, 좌하단 순서
+            b.style.backgroundColor = "#ffffff"; // 챗봇: 흰색 배경
+            b.style.color = "#333";
+            b.style.border = "1px solid #ced4da";
+            b.style.borderRadius = "15px 15px 15px 0"; // 좌상단, 우상단, 우하단, 좌하단 순서
         }
 
         wrap.appendChild(b);
         chatLog.appendChild(wrap);
         chatLog.scrollTop = chatLog.scrollHeight;
-      }
-
-      // 감정분석카드 업데이트
-      function updateAnalysisCard(analysis) {
-    if (!analysis) return;
-
-    const { summary, suggestions, emotions, mood } = analysis;
-
-    // 아무 정보도 없으면 비워두기
-    const hasAny =
-      (summary && summary.trim() !== "") ||
-      (suggestions && suggestions.trim() !== "") ||
-      (Array.isArray(emotions) && emotions.length > 0);
-
-    if (!hasAny) {
-      if (analysisMain) analysisMain.style.display = "none";
-      if (analysisEmpty) analysisEmpty.style.display = "block";
-      return;
     }
 
-    if (analysisEmpty) analysisEmpty.style.display = "none";
-    if (analysisMain) analysisMain.style.display = "block";
+    // 감정분석카드 업데이트
+    function updateAnalysisCard(analysis) {
+        if (!analysis) return;
 
-    if (summaryEl) {
-      summaryEl.textContent = summary || "";
-      summaryEl.parentElement.style.display = summary ? "block" : "none";
+        const {
+            summary,
+            suggestions,
+            emotions,
+            mood
+        } = analysis;
+
+        // 아무 정보도 없으면 비워두기
+        const hasAny =
+            (summary && summary.trim() !== "") ||
+            (suggestions && suggestions.trim() !== "") ||
+            (Array.isArray(emotions) && emotions.length > 0);
+
+        if (!hasAny) {
+            if (analysisMain) analysisMain.style.display = "none";
+            if (analysisEmpty) analysisEmpty.style.display = "block";
+            return;
+        }
+
+        if (analysisEmpty) analysisEmpty.style.display = "none";
+        if (analysisMain) analysisMain.style.display = "block";
+
+        if (summaryEl) {
+            summaryEl.textContent = summary || "";
+            summaryEl.parentElement.style.display = summary ? "block" : "none";
+        }
+
+        if (emotionsEl) {
+            emotionsEl.innerHTML = "";
+            if (Array.isArray(emotions) && emotions.length > 0) {
+                emotions.forEach(e => {
+                    const span = document.createElement("span");
+                    span.className = "badge me-1 mb-1";
+                    span.style = "background-color: #DCE1BB;color: #586211;font-size: 0.85rem;font-weight: 600;border-radius: 12px;padding: 5px 10px;";
+                    span.textContent = e;
+                    emotionsEl.appendChild(span);
+                });
+            } else {
+                const span = document.createElement("span");
+                span.className = "text-muted small";
+                span.textContent = "분석 정보 없음";
+                emotionsEl.appendChild(span);
+            }
+        }
+
+        if (moodEl) {
+            if (mood != null) {
+                moodEl.innerHTML =
+                    '<span class="badge" style="background-color: #e9ecef;color: #1a1a1a;font-size: 0.9rem;padding: 6px 10px;border-radius: 15px;">' +
+                    mood +
+                    "/10</span>";
+            } else {
+                moodEl.innerHTML =
+                    '<span class="text-muted small" style="font-size: 0.85rem;">입력된 점수가 없습니다.</span>';
+            }
+        }
+
+        if (suggestionsEl) {
+            suggestionsEl.textContent = suggestions || "";
+        }
     }
 
-    if (emotionsEl) {
-      emotionsEl.innerHTML = "";
-      if (Array.isArray(emotions) && emotions.length > 0) {
-        emotions.forEach(e => {
-          const span = document.createElement("span");
-          span.className = "badge me-1 mb-1";
-          span.style = "background-color: #DCE1BB;color: #586211;font-size: 0.85rem;font-weight: 600;border-radius: 12px;padding: 5px 10px;";
-          span.textContent = e;
-          emotionsEl.appendChild(span);
-        });
-      } else {
-        const span = document.createElement("span");
-        span.className = "text-muted small";
-        span.textContent = "분석 정보 없음";
-        emotionsEl.appendChild(span);
-      }
-    }
-
-    if (moodEl) {
-      if (mood != null) {
-        moodEl.innerHTML =
-          '<span class="badge" style="background-color: #e9ecef;color: #1a1a1a;font-size: 0.9rem;padding: 6px 10px;border-radius: 15px;">' +
-          mood +
-          "/10</span>";
-      } else {
-        moodEl.innerHTML =
-          '<span class="text-muted small" style="font-size: 0.85rem;">입력된 점수가 없습니다.</span>';
-      }
-    }
-
-    if (suggestionsEl) {
-      suggestionsEl.textContent = suggestions || "";
-    }
-  }
-
-      // 최초 응답 폴링
-      function startPollingForFirstReply(){
+    function startPollingForNewTurns() {
         if (pollingTimer) return;
 
-        chatStatus.textContent = "일기 분석 중입니다. 잠시만 기다려 주세요...";
+        chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
 
-        pollingTimer = setInterval(function(){
+        pollingTimer = setInterval(function() {
             fetch("{% url 'api:chat_history' %}?session_id=" + encodeURIComponent(sessionId), {
-                method: "GET",
-                headers: {
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            })
-            .then(resp => resp.json())
-            .then(data => {
-                const turns = data.turns || [];
-                const analysis = data.analysis || null;
+                    method: "GET",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(resp => resp.json())
+                .then(data => {
+                    const turns = data.turns || [];
+                    const analysis = data.analysis || null;
 
-                updateAnalysisCard(analysis);
+                    // 최신 턴 수 반영
+                    if (typeof data.turns_used === "number") {
+                        turnsUsed = data.turns_used;
+                    }
+                    if (typeof data.max_turns === "number" || data.max_turns === null) {
+                        maxTurns = data.max_turns;
+                    }
+                    updateTurnUI();
 
-                if (turns.length === 0) {
-                    // 아직 분석 안 끝남
-                    return;
-                }
+                    updateAnalysisCard(analysis);
 
-                // 턴이 생겼으면 기존 로그 비우고 다시 그림
-                chatLog.innerHTML = "";
-                turns.forEach(t => appendBubble(t.sender, t.message));
+                    if (turns.length <= lastTurnCount) {
+                        // 아직 새로운 턴이 없음
+                        return;
+                    }
 
-                clearInterval(pollingTimer);
-                pollingTimer = null;
-                chatStatus.textContent = "";
-            })
-            .catch(err => {
-                console.error(err);
-                clearInterval(pollingTimer);
-                pollingTimer = null;
-                chatStatus.textContent = "분석 상태를 가져오는 중 오류가 발생했습니다.";
-            });
-          }, 4000); // 4초마다 체크
-      }
+                    renderTurns(turns);
 
-      // 로딩 상태 토글
-      function setLoading(loading) {
+                    clearInterval(pollingTimer);
+                    pollingTimer = null;
+                    isLoading = false;
+                    chatInput.disabled = false;
+                    chatSendBtn.disabled = false;
+                    chatStatus.textContent = "";
+                    chatInput.focus();
+                })
+                .catch(err => {
+                    console.error(err);
+                    clearInterval(pollingTimer);
+                    pollingTimer = null;
+                    isLoading = false;
+                    chatInput.disabled = false;
+                    chatSendBtn.disabled = false;
+                    chatStatus.textContent = "상담 내용을 가져오는 중 오류가 발생했습니다.";
+                });
+        }, 3000);
+    }
+
+    // 로딩 상태 토글
+    function setLoading(loading) {
         isLoading = loading;
         chatInput.disabled = loading;
         chatSendBtn.disabled = loading;
 
         if (loading) {
-          chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
+            chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
         } else {
-          chatStatus.textContent = "";
+            chatStatus.textContent = "";
         }
-      }
+    }
 
-      // 턴 정보 UI 업데이트
-      function updateTurnUI() {
+    // 턴 정보 UI 업데이트
+    function updateTurnUI() {
         const remaining = Math.max(0, maxTurns - turnsUsed);
         if (turnsRemainingSpan) {
-          turnsRemainingSpan.textContent = remaining;
+            if (maxTurns === null){
+                // 무제한
+                turnsRemainingSpan.textContent = "무제한";
+            } else {
+                const remaining = Math.max(0, maxTurns - turnsUsed);
+                turnsRemainingSpan.textContent = remaining;
+            }
+        }
+
+        // 입력창, 버튼, 업그레이드 버튼
+        if (maxTurns === null) {
+            // 무제한
+            if (!isLoading) {
+                chatInput.disabled = false;
+                chatSendBtn.disabled = false;
+            }
+            if (upgradeWrapper) upgradeWrapper.style.display = "none";
+            return;
         }
 
         if (turnsUsed >= maxTurns) {
-          chatInput.disabled = true;
-          chatSendBtn.disabled = true;
-          upgradeWrapper.style.display = "block";
-          chatStatus.textContent = "무료 메시지 5개를 모두 사용했습니다.";
+            chatInput.disabled = true;
+            chatSendBtn.disabled = true;
+            upgradeWrapper.style.display = "block";
+            chatStatus.textContent = "무료 메시지 한도를 모두 사용했습니다.";
         } else {
-          upgradeWrapper.style.display = "none";
+            upgradeWrapper.style.display = "none";
         }
-      }
+    }
 
-      // 초기 턴 렌더링
-      if (Array.isArray(initialTurns) && initialTurns.length > 0) {
-        initialTurns.forEach(t => appendBubble(t.sender, t.message));
-      } else {
-        appendBubble("assistant", "일기 내용을 분석하고 있어요. 잠시만 기다려 주세요...");
-        startPollingForFirstReply();
-      }
+    // 초기 턴 상태 반영
+    updateTurnUI();
 
-      // 초기 턴 상태 반영
-      updateTurnUI();
-
-      async function sendMessage(text){
-        appendBubble("user", text);
+    async function sendMessage(text) {
+        appendBubble("user", text); // 프론트 미리 시각화
         chatInput.value = "";
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-        setLoading(true);
+        isLoading = true;
+        chatInput.disabled = true;
+        chatSendBtn.disabled = true;
+        chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
 
         try {
-          const resp = await fetch("{% url 'api:chat_send' %}", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": csrftoken
-            },
-            body: JSON.stringify({ session_id: sessionId, message: text })
-          });
+            const resp = await fetch("{% url 'api:chat_send' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken,
+                },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    message: text
+                })
+            });
+            const data = await resp.json();
 
-          if (!resp.ok) {
-            appendBubble("assistant", "서버에서 응답을 받지 못했어요. 잠시 후 다시 시도해 주세요.");
-            chatStatus.textContent = "요청 처리 중 문제가 발생했습니다. 잠시 뒤 다시 시도해 주세요.";
-            return;
-          }
+            if (data.error === "turn_limit_reached") {
+                // 이전 로직 그대로: 턴 제한 UI 업데이트
+                turnsUsed = data.turns_used;
+                maxTurns = data.max_turns;
+                updateTurnUI();
+                isLoading = false;
+                chatStatus.textContent = data.message || "무료 메시지 한도를 모두 사용했습니다.";
+                return;
+            }
 
-          const data = await resp.json();
-
-          if (data.error === "turn_limit_reached") {
-            // ✅ 서버가 제한에 걸렸다고 알려줌
-            turnsUsed = data.turns_used || turnsUsed;
-            maxTurns = data.max_turns || maxTurns;
+            // 정상: 큐에 넣었으니 폴링 시작
+            if (typeof data.turns_used === "number") {
+                turnsUsed = data.turns_used;
+            }
+            if (typeof data.max_turns === "number" || data.max_turns === null) {
+                maxTurns = data.max_turns;
+            }
             updateTurnUI();
-            appendBubble("assistant", data.message || "무료 메시지 한도를 모두 사용했습니다.");
-            return;
-          }
-
-          // 정상 응답
-          if (typeof data.turns_used === "number") {
-            turnsUsed = data.turns_used;
-          }
-          if (typeof data.max_turns === "number") {
-            maxTurns = data.max_turns;
-          }
-          updateTurnUI();
-
-          appendBubble("assistant", data.reply || "(응답 없음)");
+            startPollingForNewTurns();
         } catch (e) {
-          appendBubble("assistant", "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.");
-          chatStatus.textContent = "네트워크 오류로 인해 응답을 받지 못했습니다.";
-        } finally {
-          setLoading(false);
-          if (turnsUsed < maxTurns) {
-            chatInput.focus();
-          }
+            console.error(e);
+            isLoading = false;
+            chatInput.disabled = false;
+            chatSendBtn.disabled = false;
+            chatStatus.textContent = "네트워크 오류로 인해 요청을 보내지 못했습니다.";
         }
-      }
+    }
 
-      chatForm.addEventListener("submit", function(e){
+    chatForm.addEventListener("submit", function(e) {
         e.preventDefault();
-        if (isLoading || turnsUsed >= maxTurns) {
-          // 이미 요청 중 또는 턴을 다 사용했을 때 중복 전송 방지
-          return;
-        }
+        if (isLoading || turnsUsed >= maxTurns) return;
         const text = chatInput.value.trim();
         if (!text) return;
         sendMessage(text);
-      });
+    });
 
-      // 더미 결제 버튼 클릭 시
-      if (upgradeBtn) {
-        upgradeBtn.addEventListener("click", function(){
-          alert("현재는 데모 버전이며 실제 결제 기능은 제공되지 않습니다.");
+    // 페이지 최초 로딩 시: 턴이 없다면 최초 분석 폴링 시작
+    if (initialTurns.length === 0) {
+        appendBubble("assistant", "일기 내용을 분석하고 있어요. 잠시만 기다려 주세요...");
+        startPollingForNewTurns();
+    } else {
+        renderTurns(initialTurns);
+    }
+
+    // 더미 결제 버튼 클릭 시
+    if (upgradeBtn) {
+        upgradeBtn.addEventListener("click", function() {
+            alert("현재는 데모 버전이며 실제 결제 기능은 제공되지 않습니다.");
         });
-      }
+    }
 
-    })();
+})();
 </script>
 {% endblock %}

@@ -129,6 +129,11 @@
                             로그아웃
                         </button>
                     </form>
+                    <li class="nav-item d-flex align-items-center me-3">
+                        <span class="text-muted small">
+                            {{ user.username }}
+                        </span>
+                    </li>
                     {% else %}
                     <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'accounts:login' %}" style="
                     font-weight: bolder;

@@ -123,7 +123,7 @@
 <script>
 (function(){
   const imageInput = document.getElementById("id_image");
-  const contentArea = document.getElementById("content");  // Django가 자동 부여하는 id
+  const contentArea = document.getElementById("content");  // id
   const predictedInput = document.getElementById("id_contents_predicted"); // hidden field
   const csrfTokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
 
@@ -146,7 +146,7 @@
   }
 
   function pollOcrResult(taskId) {
-    stopPolling();
+    // stopPolling();
     pollTimer = setInterval(function(){
       fetch("{% url 'api:ocr_result' %}?task_id=" + encodeURIComponent(taskId), {
         method: "GET",
@@ -192,7 +192,7 @@
 
     lastUserText = contentArea.value;
     contentArea.value = "";
-    contentArea.placeholder = "분석중입니다...";
+    contentArea.placeholder = "분석중입니다...\n작업은 최대 3분정도 소요될 수 있습니다.";
     contentArea.disabled = true;
 
     const formData = new FormData();
@@ -210,7 +210,7 @@
       if (!data.task_id) {
         throw new Error("no task_id");
       }
-      // ✅ task_id 로 결과 폴링 시작
+      // task_id 로 결과 폴링 시작
       pollOcrResult(data.task_id);
     })
     .catch(err => {

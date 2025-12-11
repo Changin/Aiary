@@ -30,12 +30,12 @@
                     </div>
                     <div class="mb-3">
                         <label for="title" class="form-label"
-                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.title.label_tag }}</label>
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">제목:</label>
                         {{ form.title }}
                     </div>
                     <div class="mb-3">
                         <label for="id_image" class="form-label"
-                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">손글씨 일기 사진 (선택)</label>
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">손글씨 일기 인식 (선택)</label>
                         <input type="file" name="image" id="id_image" accept="image/*"
                                class="form-control"
                                style="
@@ -47,14 +47,18 @@
                                     /* 파일 선택 버튼 자체는 브라우저가 그리므로, 이 배경색은 입력 영역 전체에 적용됨 */
                                 ">
                         <div class="form-text">
-                            사진을 선택하면 자동으로 텍스트를 인식해서 아래 일기 내용에 채워줘요. (글씨체에 따라 인식률이 낮아질 수 있습니다.)<br>
-                            글씨에 따라서 인식을 못하는 경우 "__" 로 수정해야할 부분이 표시됩니다.
+                            사진을 선택하면 자동으로 텍스트를 인식해서 아래 일기 내용에 채워줘요. <br>글씨체에 따라 인식률이 낮아질 수 있어요.<br>
+                            글씨에 따라서 인식을 못하는 경우 "__" 로 수정해야할 부분이 표시돼요.
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="{{ form.content.id_for_label }}" class="form-label"
-                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">{{ form.content.label_tag }}</label>
-                        {{ form.content }}
+                               style="font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">내용:</label>
+                        <textarea id="content" class="form-control" rows=12
+                                  style="border-radius: 16px;color: #1a1a1a;padding: 15px;font-size: 1rem;border: 1px solid #a7aaae;min-height: 250px;"
+                                  placeholder="{{ topic_suggestion | default:'오늘 하루를 돌아보며 느낀 점을 자유롭게 적어보세요.'}}
+손글씨 일기의 경우 파일 첨부를 이용해 주세요.">{{ form.content.value | default_if_none:'' }}</textarea>
+
                     </div>
                     <!-- 모델 최초 예측값 저장 숨김 필드 -->
                     {{ form.contents_predicted }}

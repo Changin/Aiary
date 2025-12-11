@@ -3,6 +3,21 @@ from django.conf import settings
 from django.utils import timezone
 
 
+# 추천 주제
+class DiaryTopic(models.Model):
+    text = models.CharField("주제 문구", max_length=255)
+    is_active = models.BooleanField("사용 여부", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "일기 주제"
+        verbose_name_plural = "일기 주제 목록"
+
+    def __str__(self):
+        # admin 리스트에서 보기 좋게
+        return self.text[:30] + ("..." if len(self.text) > 30 else "")
+
+
 # 일기 모델
 class DiaryEntry(models.Model):
     user = models.ForeignKey(

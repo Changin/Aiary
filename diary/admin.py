@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import DiaryEntry, CounselingSession, ChatTurn
+from .models import DiaryEntry, CounselingSession, ChatTurn, DiaryTopic
+
+
+@admin.register(DiaryTopic)
+class DiaryTopicAdmin(admin.ModelAdmin):
+    list_display = ("text", "is_active", "created_at")
+    list_filter = ("is_active",)
+    search_fields = ("text",)
 
 
 @admin.register(DiaryEntry)

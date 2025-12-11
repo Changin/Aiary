@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, TemplateView
 from django.shortcuts import redirect
-from .models import DiaryEntry, CounselingSession, ChatTurn
+from .models import DiaryEntry, CounselingSession, ChatTurn, DiaryTopic
 from .forms import DiaryEntryForm
 # from .services import bootstrap_counseling  # 첫 응답 생성 함수
 from .tasks import bootstrap_counseling_task    # 비동기 첫 응답 생성 함수
@@ -22,6 +22,18 @@ class EntryCreateView(LoginRequiredMixin, CreateView):
     model = DiaryEntry
     form_class = DiaryEntryForm
     template_name = "diary/entry_form.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # 랜덤 주제 하나 선택
+        topic = (
+            DiaryTopic.objects
+            .filter(is_active=True)
+            .order_by("?")
+            .first()
+        )
+        context["topic_suggestion"] = topic.text if topic else None
+        return context
 
     def form_valid(self, form):
         form.instance.user = self.request.user

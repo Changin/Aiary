@@ -16,7 +16,7 @@ def _ensure_initialized():
         _ENGINE_INITIALIZED = True
 
 
-@shared_task
+@shared_task(time_limit=600, soft_time_limit=580)
 def run_ocr_task(image_path: str) -> str:
     """
     image_path: 실제 파일 경로 (예: MEDIA_ROOT/diary_ocr/xxx.jpg)

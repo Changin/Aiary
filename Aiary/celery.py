@@ -1,6 +1,7 @@
 # Aiary/celery.py
 import os
 from celery import Celery
+from datetime import timedelta
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Aiary.settings")
 
@@ -15,3 +16,6 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # 각 앱의 tasks.py 자동 검색
 app.autodiscover_tasks()
+
+# 결과 만료
+CELERY_RESULT_EXPIRES = timedelta(hours=1)

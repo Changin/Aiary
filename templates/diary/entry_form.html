@@ -163,12 +163,14 @@
 
         if (data.status === "success") {
           const text = data.text || "";
+          contentArea.disabled = false;
           contentArea.value = text;
           if (predictedInput) {
             predictedInput.value = text;
           }
         } else {
           alert(data.message || "OCR 분석 중 오류가 발생했습니다.");
+          contentArea.placeholder = originalPlaceholder
           contentArea.value = lastUserText;
         }
       })

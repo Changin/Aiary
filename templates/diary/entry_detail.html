@@ -303,8 +303,25 @@
 
 
     function renderTurns(turns) {
+        // console.log("renderTurns(), ", turns);
+        if (!chatLog) {
+            console.error("chatLog element not found");
+            return;
+        }
+        if (!Array.isArray(turns)) {
+            console.error("turns is not array", turns);
+            return;
+        }
+
         chatLog.innerHTML = "";
-        turns.forEach(t => appendBubble(t.sender, t.message));
+        turns.forEach(t => {
+            if (!t || typeof t.message === "undefined") {
+                console.warn("invalid turn object:", t);
+                return;
+            }
+            const sender = (t.sender === "user") ? "user" : "assistant";
+            appendBubble(t.sender, t.message);
+        });
         lastTurnCount = turns.length;
     }
 
@@ -402,77 +419,8 @@
         }
     }
 
-    function startPollingForNewTurns() {
-        if (pollingTimer) return;
-
-        chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
-
-        pollingTimer = setInterval(function() {
-            fetch("{% url 'api:chat_history' %}?session_id=" + encodeURIComponent(sessionId), {
-                    method: "GET",
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                })
-                .then(resp => resp.json())
-                .then(data => {
-                    const turns = data.turns || [];
-                    const analysis = data.analysis || null;
-
-                    // 최신 턴 수 반영
-                    if (typeof data.turns_used === "number") {
-                        turnsUsed = data.turns_used;
-                    }
-                    if (typeof data.max_turns === "number" || data.max_turns === null) {
-                        maxTurns = data.max_turns;
-                    }
-                    updateTurnUI();
-
-                    updateAnalysisCard(analysis);
-
-                    if (turns.length <= lastTurnCount) {
-                        // 아직 새로운 턴이 없음
-                        return;
-                    }
-
-                    renderTurns(turns);
-
-                    clearInterval(pollingTimer);
-                    pollingTimer = null;
-                    isLoading = false;
-                    chatInput.disabled = false;
-                    chatSendBtn.disabled = false;
-                    chatStatus.textContent = "";
-                    chatInput.focus();
-                })
-                .catch(err => {
-                    console.error(err);
-                    clearInterval(pollingTimer);
-                    pollingTimer = null;
-                    isLoading = false;
-                    chatInput.disabled = false;
-                    chatSendBtn.disabled = false;
-                    chatStatus.textContent = "상담 내용을 가져오는 중 오류가 발생했습니다.";
-                });
-        }, 3000);
-    }
-
-    // 로딩 상태 토글
-    function setLoading(loading) {
-        isLoading = loading;
-        chatInput.disabled = loading;
-        chatSendBtn.disabled = loading;
-
-        if (loading) {
-            chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
-        } else {
-            chatStatus.textContent = "";
-        }
-    }
-
     // 턴 정보 UI 업데이트
     function updateTurnUI() {
-        const remaining = Math.max(0, maxTurns - turnsUsed);
         if (turnsRemainingSpan) {
             if (maxTurns === null){
                 // 무제한
@@ -498,14 +446,88 @@
             chatInput.disabled = true;
             chatSendBtn.disabled = true;
             upgradeWrapper.style.display = "block";
-            chatStatus.textContent = "무료 메시지 한도를 모두 사용했습니다.";
+            if (!isLoading) {
+                chatInput.placeholder = "무료 메시지 한도를 모두 사용했습니다.";
+            }
         } else {
+            if (!isLoading) {
+                chatInput.disabled = false;
+                chatSendBtn.disabled = false;
+            }
             upgradeWrapper.style.display = "none";
         }
     }
 
     // 초기 턴 상태 반영
     updateTurnUI();
+
+    function startPollingForNewTurns() {
+        if (pollingTimer) return;
+
+        chatStatus.textContent = "Aiary가 답변을 준비하고 있어요...";
+        isLoading = true;
+        chatInput.disabled = true;
+        chatSendBtn.disabled = true;
+
+        pollingTimer = setInterval(function() {
+            fetch("{% url 'api:chat_history' %}?session_id=" + encodeURIComponent(sessionId), {
+                    method: "GET",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(resp => resp.json())
+                .then(data => {
+                    const turns = data.turns || [];
+                    const analysis = data.analysis || null;
+
+                    // 최신 턴 수 반영
+                    if (typeof data.turns_used === "number") {
+                        turnsUsed = data.turns_used;
+                    }
+                    if (typeof data.max_turns === "number" || data.max_turns === null) {
+                        maxTurns = data.max_turns;
+                    }
+                    updateTurnUI();
+                    updateAnalysisCard(analysis);
+
+                    if (turns.length <= lastTurnCount) {
+                        // 아직 새로운 턴이 없음
+                        // console.log("retry polling..");
+                        return;
+                    }
+
+                    // 2) 새로 추가된 턴들 중에 assistant 턴이 있는지 확인
+                    const newTurns = turns.slice(lastTurnCount);  // 새로 생긴 턴들만
+                    const hasNewAssistant = newTurns.some(
+                        t => t && t.sender === "assistant"
+                    );
+
+                    // 2-1) 아직 assistant 턴이 없으면: 그냥 lastTurnCount만 갱신하고 계속 폴링
+                    if (!hasNewAssistant) {
+                        // console.log("retry polling..");
+                        lastTurnCount = turns.length;
+                        return;
+                    }
+
+                    renderTurns(turns);
+
+                    clearInterval(pollingTimer);
+                    pollingTimer = null;
+                    isLoading = false;
+                    updateTurnUI();
+                    chatStatus.textContent = "";
+                })
+                .catch(err => {
+                    console.error(err);
+                    clearInterval(pollingTimer);
+                    pollingTimer = null;
+                    isLoading = false;
+                    updateTurnUI();
+                    chatStatus.textContent = "상담 내용을 가져오는 중 오류가 발생했습니다.";
+                });
+        }, 3000);
+    }
 
     async function sendMessage(text) {
         appendBubble("user", text); // 프론트 미리 시각화
@@ -532,12 +554,12 @@
             const data = await resp.json();
 
             if (data.error === "turn_limit_reached") {
-                // 이전 로직 그대로: 턴 제한 UI 업데이트
                 turnsUsed = data.turns_used;
                 maxTurns = data.max_turns;
                 updateTurnUI();
                 isLoading = false;
-                chatStatus.textContent = data.message || "무료 메시지 한도를 모두 사용했습니다.";
+                // chatStatus.textContent = data.message || "무료 메시지 한도를 모두 사용했습니다.";
+                chatInput.placeholder = data.message || "무료 메시지 한도를 모두 사용했습니다.";
                 return;
             }
 
@@ -548,20 +570,18 @@
             if (typeof data.max_turns === "number" || data.max_turns === null) {
                 maxTurns = data.max_turns;
             }
-            updateTurnUI();
             startPollingForNewTurns();
         } catch (e) {
             console.error(e);
             isLoading = false;
-            chatInput.disabled = false;
-            chatSendBtn.disabled = false;
             chatStatus.textContent = "네트워크 오류로 인해 요청을 보내지 못했습니다.";
+            updateTurnUI();
         }
     }
 
     chatForm.addEventListener("submit", function(e) {
         e.preventDefault();
-        if (isLoading || turnsUsed >= maxTurns) return;
+        if (isLoading || (maxTurns !==null && turnsUsed >= maxTurns)) return;
         const text = chatInput.value.trim();
         if (!text) return;
         sendMessage(text);
@@ -570,6 +590,8 @@
     // 페이지 최초 로딩 시: 턴이 없다면 최초 분석 폴링 시작
     if (initialTurns.length === 0) {
         appendBubble("assistant", "일기 내용을 분석하고 있어요. 잠시만 기다려 주세요...");
+        chatInput.disabled = true;
+        chatSendBtn.disabled = true;
         startPollingForNewTurns();
     } else {
         renderTurns(initialTurns);

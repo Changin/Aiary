@@ -37,8 +37,8 @@ def ocr_start(request):
     image_path = os.path.join(settings.MEDIA_ROOT, filename)
 
     # Celery Task 실행하고 곧바로 task_id 반환
-    async_result = run_ocr_task(image_path)
-    return JsonResponse({"task_id": async_result})
+    async_result = run_ocr_task.delay(image_path)
+    return JsonResponse({"task_id": async_result.id})
 
 
 @login_required

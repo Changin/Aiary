@@ -170,6 +170,7 @@
           }
         } else {
           alert(data.message || "OCR 분석 중 오류가 발생했습니다.");
+          contentArea.disabled = false;
           contentArea.placeholder = originalPlaceholder
           contentArea.value = lastUserText;
         }
@@ -178,6 +179,8 @@
         console.error(err);
         stopPolling();
         alert("네트워크 오류로 인해 OCR 분석에 실패했습니다.");
+        contentArea.disabled = false;
+        contentArea.placeholder = originalPlaceholder
         contentArea.value = lastUserText;
       })
     }, 3000); // 3초마다 폴링

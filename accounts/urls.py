@@ -15,7 +15,7 @@ app_name = "accounts"
 urlpatterns = [
     path("login/", auth_views.LoginView.as_view(template_name="accounts/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(next_page="web:home"), name="logout"),
-    path("signup/", SignupView.as_view(), name="signup"),
+    # path("signup/", SignupView.as_view(), name="signup"), # 테스트 기간에는 회원가입 비활성화
 
     # 오류 안나게 placeholder 임시 구현
     # path("login/", placeholder, name="login"),

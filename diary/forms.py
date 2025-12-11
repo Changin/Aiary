@@ -22,12 +22,12 @@ class DiaryEntryForm(forms.ModelForm):
 
     class Meta:
         model = DiaryEntry
-        fields = ["entry_date", "title", "content", "mood_self_report"]
+        fields = ["entry_date", "title", "content", "mood_self_report", "contents_predicted"]
         widgets = {
             "title": forms.TextInput(attrs={"id": "title", "class": "form-control", "placeholder": "제목을 입력하세요.", "style": "color: #1A1A1A;border-radius: 16px;padding: 10px 15px;font-size: 1rem;border: 1px solid #a7aaae;"}),
             "content": forms.Textarea(attrs={"id": "content", "class": "form-control", "rows": 12, "style": "border-radius: 16px;color: #1a1a1a;padding: 15px;font-size: 1rem;border: 1px solid #a7aaae;min-height: 250px;"}),
             "mood_self_report": forms.NumberInput(attrs={"id": "mood", "class": "form-control", "min": 1, "max": 10, "step": 1, "style": "border-radius: 16px;color: #1a1a1a;padding: 10px 15px;font-size: 1rem;border: 1px solid #A7AAAE;"}),
-            "contents_predicted": forms.HiddenInput(),  # 숨김 필드 (OCR모델이 예측한 값 POST로 넘어감)
+            "contents_predicted": forms.HiddenInput(attrs={"id": "id_contents_predicted"}),  # 숨김 필드 (OCR모델이 예측한 값 POST로 넘어감)
         }
         labels = {
             "mood_self_report": "오늘의 기분(1~10)",

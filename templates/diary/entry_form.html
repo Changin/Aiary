@@ -146,7 +146,6 @@
   }
 
   function pollOcrResult(taskId) {
-    // stopPolling();
     pollTimer = setInterval(function(){
       fetch("{% url 'api:ocr_result' %}?task_id=" + encodeURIComponent(taskId), {
         method: "GET",
@@ -156,7 +155,7 @@
       })
       .then(resp => resp.json())
       .then(data => {
-        if (data.status === "pending") {
+        if (data.status === "pending" || data.status === "STARTED") {
           // 아직 처리 중
           return;
         }
@@ -179,10 +178,6 @@
         alert("네트워크 오류로 인해 OCR 분석에 실패했습니다.");
         contentArea.value = lastUserText;
       })
-      .finally(() => {
-        contentArea.disabled = false;
-        contentArea.placeholder = originalPlaceholder;
-      });
     }, 3000); // 3초마다 폴링
   }
 

@@ -33,7 +33,7 @@ def chat_reply_task(session_id: int):
     messages.append({"role": "system", "content": context_text})
 
     # 과거 턴들
-    recent_turns = list(session.turns.order_by("-created_at")[:8])[::-1]
+    recent_turns = list(session.turns.order_by("-created_at")[:50])[::-1]
     for t in recent_turns:
         role = "assistant" if t.sender == "assistant" else "user"
         messages.append({"role": role, "content": t.message})

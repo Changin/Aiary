@@ -69,24 +69,9 @@ def bootstrap_counseling(entry: DiaryEntry, session: CounselingSession):
 
     # 사용자에게 보여줄 첫 메시지 텍스트 구성
     msg_lines = []
-    msg_lines.append("오늘 일기에 대해 Aiary가 정리해본 내용이에요.")
-    if summary:
-        msg_lines.append("■ 요약")
-        msg_lines.append(summary)
-        msg_lines.append("")
-
-    if emotions:
-        msg_lines.append("■ 지금 마음에서 두드러지는 감정들")
-        msg_lines.append(", ".join(emotions))
-        msg_lines.append("")
-
-    if advice:
-        msg_lines.append("■ 오늘을 위한 작은 제안")
-        msg_lines.append(advice)
-        msg_lines.append("")
+    msg_lines.append("오늘 일기를 잘 읽었어요.\n일기의 내용에 대해서 같이 대화하고 싶은 질문들이 3가지 있어요.\n")
 
     if questions:
-        msg_lines.append("■ 오늘을 돌아보는 자기 성찰 질문 3가지")
         for i, q in enumerate(questions[:3], start=1):
             msg_lines.append(f"{i}. {q}")
         msg_lines.append("")

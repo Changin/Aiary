@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
 # Create your models here.
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -13,7 +14,7 @@ class Profile(models.Model):
     # 향후 확장: 토큰 구입한 경우 남은 토큰 수
     token_balance = models.PositiveIntegerField(null=True, blank=True)
 
-    def get_max_turns(self, default=5):
+    def get_max_turns(self, default=50):
         if self.turn_limit_enabled is False:
             return None  # 제한 없음
         if self.max_turns_per_session:

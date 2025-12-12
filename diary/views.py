@@ -81,7 +81,7 @@ class EntryDetailView(LoginRequiredMixin, DetailView):
         )
 
         # 무료 사용자 턴 제한 (세션당 5개)
-        MAX_TURNS = 5
+        MAX_TURNS = 50
         used_turns = session.turns.filter(sender="user").count()
         ctx["max_turns"] = MAX_TURNS
         ctx["turns_used"] = used_turns

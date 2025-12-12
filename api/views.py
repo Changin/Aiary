@@ -19,7 +19,7 @@ from openai import OpenAI
 client = OpenAI(api_key=settings.SECRETS.get("OPENAI_API_KEY", None))
 MODEL_NAME = settings.SECRETS.get("OPENAI_MODEL", "gpt-4.1-mini")
 
-MAX_TURNS_PER_SESSION = 5
+MAX_TURNS_PER_SESSION = 50
 
 
 @login_required
@@ -99,6 +99,7 @@ def chat_history(request):
         per_user_max = profile.get_max_turns(default_max)   # None이면 무제한
     else:
         per_user_max = default_max
+    print(per_user_max)
 
     user_turn_count = session.turns.filter(sender="user").count()
 
